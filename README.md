@@ -140,7 +140,7 @@ Not included (yet):
 
 ---
 
-## 🚀 Running the Project (WIP)
+## Running the Project (WIP)
 
 ```bash
 pip install -r requirements.txt
@@ -164,5 +164,22 @@ engram/
 ├── docs/
 └── main.py
 ```
+## Use Cases & Positioning
+
+Engram is designed for engineering teams to improve system understanding and reduce context fragmentation.
+
+Primary use cases:
+- Understanding service dependencies
+- Debugging incidents using historical context
+- Tracing architectural decisions
+- Accelerating onboarding
+
+Target users:
+- Software engineers
+- Tech leads
+- SRE teams
+
+Engram is not a plug-and-play system in its current form.
+It requires structured inputs (PRs, incidents, decisions) to build a reliable knowledge graph, but is designed to be extensible for broader integrations in future iterations.
 
 ---
