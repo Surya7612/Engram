@@ -12,7 +12,15 @@ Engineering knowledge today is distributed across multiple sources—pull reques
 
 Engram introduces a **structured engineering memory layer** that models entities and relationships explicitly, enabling systems to reason over context rather than infer it from unstructured text.
 
-This document outlines the product vision, system positioning, target users, use cases, and long-term evolution strategy for Engram.
+### 1.1 Core thesis
+
+The central idea is not “use a smarter model.” It is:
+
+**Engineering context should be structured first; AI should reason over that structure—not repeatedly guess meaning from raw, disconnected text.**
+
+The durable advantage is **better structured context**: explicit relationships, persistent memory where the graph and definitions hold truth, and **semantic grounding** so meanings are defined instead of inferred from language alone. The LLM is a **reasoning layer**, not the system’s long-term memory.
+
+This document outlines the product vision, system positioning, target users, use cases, MVP boundaries, and long-term evolution strategy for Engram.
 
 ---
 
@@ -105,13 +113,25 @@ The system is based on the following principle:
 
 Engram is not:
 
-* a code generation tool
-* a general-purpose chatbot
-* a simple RAG pipeline
+* a code generation tool (not a replacement for Cursor, Copilot, or Codex)
+* a general-purpose “chat with your docs” app
+* a simple RAG pipeline that only retrieves text chunks
+* a full enterprise platform or plug-and-play product in v1
+* a fully autonomous engineering agent or background “agent swarm”
+* a code parser / AST-heavy intelligence platform
+* an attempt to model all organizational knowledge on day one
 
 Engram is:
 
-> A system that transforms engineering artifacts into a structured knowledge graph, enabling AI systems to reason over relationships instead of raw text.
+> A system that ingests engineering artifacts, extracts entities and relationships, stores structure in a graph, supplements recall with vectors, applies **lightweight semantic definitions**, and uses **agentic orchestration** (LangGraph) to run a **traceable query pipeline**—so answers are grounded in **relationships and definitions**, not only similarity.
+
+### 3.3 Semantic grounding (Finch principle)
+
+A guiding principle (inspired by how products like Uber Finch treat metadata) is:
+
+**Do not let the model guess business or engineering meaning from raw data when you can supply explicit definitions and structure.**
+
+Engram’s semantic layer exists for **consistency and traceability**, not for buzzwords. In the MVP it is intentionally **lightweight** (e.g. simple definitions in config or mappings). A richer schema-management or validation module may come later; the product should not claim a full “semantic engine” until it exists.
 
 ---
 
@@ -125,10 +145,17 @@ Engram introduces a layered architecture:
 
 This layer models:
 
-* entities (services, PRs, incidents, decisions)
-* relationships (affects, caused_by, related_to, applies_to)
+* **Entities (MVP):** Service, PR, Incident, Decision — **do not add more entity types unless there is a clear need**; scope discipline keeps the graph explainable.
+* **Relationships (MVP),** stored and queried explicitly in Neo4j:
 
-The graph serves as the **source of truth** for system relationships.
+```text
+PR → AFFECTS → Service
+Incident → CAUSED_BY → Service
+Incident → RELATED_TO → PR
+Decision → APPLIES_TO → Service
+```
+
+The graph is the **source of truth** for connectivity between artifacts. Future extensions (for example versioned decision chains such as “replaced by”) are optional product evolution, not required for the initial graph schema unless explicitly adopted.
 
 ---
 
@@ -138,9 +165,11 @@ The semantic layer defines:
 
 * what each entity represents
 * how entities should be interpreted
-* domain-specific definitions
+* domain-specific definitions (ownership, dependencies described in text, etc.)
 
-This prevents ambiguity and ensures consistency across reasoning processes.
+This reduces ambiguity and supports **grounded** answers. For the MVP, implementations should stay **simple** (e.g. dictionary or JSON-backed definitions); avoid building a heavy schema-validation product before the rest of the pipeline is proven.
+
+**Note:** The current direction is **lightweight semantic definitions** for core entities; a dedicated module with richer schema management and validation is a plausible future iteration—not a prerequisite to demonstrate value.
 
 ---
 
@@ -160,13 +189,53 @@ This allows retrieval to be both:
 
 ### 4.4 Agentic Reasoning Layer
 
-An agentic workflow (LangGraph) orchestrates:
+An agentic workflow (**LangGraph**) orchestrates:
 
-* retrieval strategy selection
+* retrieval strategy selection (when to lean on graph vs vector vs both)
 * combination of graph and vector results
-* structured reasoning over retrieved context
+* passing **structured, retrieved context** into the LLM for the final answer
 
-The LLM operates as an interpreter, not a memory store.
+LangGraph should be used **meaningfully but lightly**—orchestration should remain understandable and debuggable, not a pile of unused nodes. The LLM operates as an **interpreter over grounded context**, not as the durable memory store.
+
+---
+
+### 4.5 End-to-end query pipeline (MVP)
+
+Every query should follow the same logical pipeline (no shortcuts that skip retrieval or grounding):
+
+1. Receive the user question.
+2. Determine relevant entities (and retrieval intent).
+3. **Retrieve graph relationships** (Neo4j).
+4. **Retrieve vector matches** (Qdrant) where helpful.
+5. **Attach lightweight semantic definitions** for entities in play.
+6. **Combine** into a single structured context bundle.
+7. Pass that bundle to the LLM and return a **structured, bullet-oriented** answer grounded in retrieved data.
+
+Expected API shape for the MVP: a **FastAPI** service exposing at minimum **`POST /query`** (natural-language question in, structured response out). Parallel retrieval (graph + vector) is an appropriate place for **modest concurrency**; avoid premature caching layers or distributed plumbing.
+
+---
+
+### 4.6 MVP modular layout (reference)
+
+Implementation is guided as a **modular monolith** with clear package boundaries, for example:
+
+```text
+engram/
+├── ingestion/
+├── extraction/
+├── graph/
+├── vector/
+├── query/
+├── agent/
+├── api/
+├── data/
+├── docs/
+└── main.py
+```
+
+Each folder should own one responsibility; logic should not sprawl across modules. This layout is prescriptive for the codebase even when the repository is still young.
+
+**Stack alignment (MVP):** **FastAPI** for the API, **Neo4j** for the graph, **Qdrant** for vectors, **LangGraph** for orchestration, and an **OpenAI or Anthropic** model as the reasoning endpoint—the differentiator is **what context is assembled and how**, not which logo is on the LLM.
 
 ---
 
@@ -246,9 +315,9 @@ Query:
 
 Output:
 
-* decision records
-* related services
-* replaced or superseded decisions
+* decision records (ADRs) and how they apply to services
+* related services and dependencies
+* (Optional future) explicit version chains when the graph models supersession—for the MVP, focus on **applies_to** and clear definitions, not automatic “replaced-by” history unless that relationship is intentionally added
 
 ---
 
@@ -367,11 +436,11 @@ Full plug-and-play capability would involve:
 
 Achieving plug-and-play behavior introduces tradeoffs:
 
-| Dimension | Impact |
-|----------|-------|
-Automation | Increased complexity |
-Flexibility | Reduced determinism |
-Integration | Higher operational overhead |
+| Dimension   | Impact                 |
+|------------|------------------------|
+| Automation | Increased complexity   |
+| Flexibility | Reduced determinism   |
+| Integration | Higher operational overhead |
 
 ---
 
@@ -386,6 +455,22 @@ Engram prioritizes:
 over full automation in early stages.
 
 This ensures a strong foundation before expanding toward plug-and-play capabilities.
+
+---
+
+### 7.5 Explicit non-goals (MVP guardrails)
+
+To preserve a shippable MVP and credible positioning, the **first implementation** should **not** prioritize:
+
+* Full plug-and-play integrations (GitHub, Slack, Jira, etc.) as if they were turnkey
+* Autonomous background agents or long-running “self-healing” retrieval loops
+* Heavy distributed systems (Kafka, job queues, stream processing) unless a clear demo need appears
+* Full web UI or enterprise dashboards
+* Deep code parsing / AST-based dependency analysis
+* “Self-healing RAG,” adaptive pipelines, or model-switching orchestration theater
+* Production-grade deployment complexity before the core pipeline works end-to-end
+
+**Rule of thumb:** if it does not materially improve the **next** end-to-end demo milestone in a short horizon, defer it.
 
 ---
 
@@ -472,39 +557,43 @@ Although initially focused on engineering systems, the architecture can extend t
 
 ## 10. Roadmap
 
----
-
-### Phase 1 — MVP
-
-* Entity extraction
-* Graph modeling
-* Basic queries
-* Controlled dataset
+Roadmap phases below are **sequenced for a believable build**: the MVP must prove the **full vertical slice** (ingestion → graph + vectors → semantic defs → query fusion → LangGraph → API), not a subset with slides about the rest.
 
 ---
 
-### Phase 2 — Intelligence Layer
+### Phase 1 — MVP (must ship together)
 
-* Agentic orchestration (LangGraph)
-* Improved retrieval strategies
-* semantic refinement
-
----
-
-### Phase 3 — Usability
-
-* UI/dashboard
-* graph visualization
-* query interface improvements
+* Controlled **ingestion** (e.g. JSON or similarly structured inputs for PRs, incidents, decisions, services)
+* **Entity extraction** (rule-based and/or LLM-assisted) into the four core entity types
+* **Neo4j** graph: create nodes, relationships, and relationship queries
+* **Qdrant** (or equivalent) for embeddings and semantic recall
+* **Lightweight semantic definitions** (config/dict-style—not a full schema engine)
+* **Query engine** that combines graph + vector results and attaches definitions
+* **LangGraph** agent: routing / combination / handoff to LLM with grounded context
+* **FastAPI** surface (e.g. `POST /query`) and at least **one** compelling end-to-end demo query
+* Outputs that are **structured, bullet-oriented, and traceable** to retrieved data
 
 ---
 
-### Phase 4 — Scale
+### Phase 2 — Hardening and retrieval quality
 
-* asynchronous ingestion pipelines
-* service decomposition
-* monitoring and observability
-* cloud deployment
+* Clearer retrieval strategies and prompts; optional metadata filters
+* Better logging and observability of which path fired (graph vs vector vs both)
+* Incrementally richer semantic definitions as usage exposes gaps
+
+---
+
+### Phase 3 — Usability and visualization
+
+* Optional UI: dashboards, graph exploration, better query ergonomics (still secondary to API correctness)
+
+---
+
+### Phase 4 — Scale and operations (only when justified)
+
+* Asynchronous ingestion, decomposition, stronger production deployment patterns, cloud hardening
+
+**Awareness-only future ideas** (from product exploration—not commitments): Clicky-style **interface** pairing (screen/voice) where Engram remains the **memory/context** layer; code-level dependency graphs; broader connectors; real-time pipelines; enterprise integrations. These belong in narrative and selective comments, not in the MVP build unless scope explicitly expands.
 
 ---
 ## 11. Adoption Strategy
@@ -581,10 +670,13 @@ This avoids disruption while demonstrating immediate utility.
 
 The system is considered successful if it can:
 
-* accurately model relationships between entities
-* answer system-level queries reliably
-* reduce time required to understand system context
-* provide traceable and explainable outputs
+* **Ingest** structured or controlled inputs and persist them without hand-waving
+* **Build a working graph** with the intended relationships
+* **Retrieve meaningful structure** from the graph and useful recall from vectors when appropriate
+* Answer **at least one representative query end-to-end** through the full pipeline (including LangGraph and API), with outputs that are **grounded** in retrieved data
+* Remain **debuggable**: an engineer can follow why an answer was produced
+
+Secondary goals (onboarding time, org-wide adoption) matter later; **shipping a credible demo of structured memory + hybrid retrieval + orchestration** is the bar for the flagship MVP.
 
 ---
 ## 14. System Boundaries
@@ -602,6 +694,22 @@ It does not attempt to:
 - guarantee perfect accuracy in inferred relationships
 
 The system is designed as a complementary layer, not a replacement for existing tools.
+
+### 14.1 Credibility and messaging (what not to claim)
+
+Public-facing materials should **not** imply:
+
+- full plug-and-play enterprise readiness
+- production-scale platform completeness
+- parity with or replacement of coding assistants (Cursor/Codex/Copilot)
+- “solved” engineering memory for the whole organization
+- perfect autonomous reasoning without human validation of structure
+
+Healthy framing:
+
+- a **controlled**, strong, explainable system
+- a **structured memory layer** with graph + vector + semantic grounding + agentic orchestration
+- a project that proves **sound engineering and applied AI judgment**
 
 ## 15. Summary
 
@@ -627,6 +735,15 @@ to:
 
 Engram is not intended to replace existing tools.
 It is designed to complement them by introducing a **structured context layer** that enables more reliable understanding and reasoning over engineering systems.
+
+---
+
+## 17. Documentation split (README vs deeper docs)
+
+* **README** should stay **concise and high-signal**: problem, solution, architecture sketch, example query, stack, scope, positioning, plug-and-play honesty, brief future hints. It should **not** read like a full pitch deck or list modules that do not exist.
+* **Documents like this one** (`product-vision.md`, architecture notes, adoption detail) hold **depth, tradeoffs, and evolution**—the material you want in interviews and design discussions.
+
+**Rule:** README earns attention; deeper docs earn trust.
 
 ---
 
