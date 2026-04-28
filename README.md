@@ -91,6 +91,31 @@ Data Sources → Ingestion → Extraction
    API (FastAPI)
 ```
 
+### Product architecture flow (vision)
+
+```mermaid
+flowchart TD
+    A[Engineering Artifacts<br/>PRs, Incidents, ADRs, Docs, Ownership] --> B[Ingestion + Extraction]
+    B --> C[Engineering Context Graph<br/>Neo4j]
+    B --> D[Semantic Retrieval Store<br/>Qdrant]
+    B --> E[Semantic Definitions]
+
+    C --> F[Hybrid Retrieval Engine]
+    D --> F
+    E --> F
+
+    F --> G[Evidence + Provenance Layer]
+    G --> H[Risk Analysis]
+    H --> I[Policy Engine<br/>Allow, Warn, Review, Block]
+    I --> J[Agent Orchestration<br/>LangGraph]
+    J --> K[FastAPI Layer]
+
+    K --> L[Preflight Packet Mode<br/>Before changes]
+    K --> M[Incident Context Mode<br/>During on-call]
+    K --> N[Context Explorer]
+    K --> O[Governance and Approvals]
+```
+
 ### Data model
 
 **Entities**
@@ -173,6 +198,22 @@ This repository represents the MVP layer of Engram.
 - Graph + vector retrieval
 - Basic semantic grounding
 - Queryable engineering context through an agentic workflow
+
+### MVP flow
+
+```mermaid
+flowchart TD
+    A[Input Data<br/>PRs, Incidents, ADRs, Services] --> B[Ingestion + Basic Extraction]
+    B --> C[Neo4j Graph]
+    B --> D[Qdrant Vectors]
+    B --> E[Lightweight Semantic Definitions]
+    C --> F[Query Engine]
+    D --> F
+    E --> F
+    F --> G[LangGraph Orchestration]
+    G --> H[FastAPI POST /query]
+    H --> I[Structured Response<br/>Context + Risk + Evidence]
+```
 
 ### Not included yet
 
