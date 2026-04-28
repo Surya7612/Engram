@@ -1,12 +1,12 @@
-# Engram — Engineering Context Layer
+# Engram — Engineering Context & Safety Layer
 
-### Agentic AI system for structured engineering memory, semantic grounding, and reliable reasoning
+### Pre-change context, risk, and safety system for AI-assisted engineering
 
 ---
 
 ## Overview
 
-**Engram** is an agentic AI system that models engineering context as a **knowledge graph with semantic grounding**, enabling **hybrid retrieval (graph + vector)** and **structured reasoning** over system relationships.
+**Engram** is an agentic AI system that models engineering context as a **knowledge graph with semantic grounding**, enabling **hybrid retrieval (graph + vector)** and **evidence-backed reasoning** over system relationships.
 
 It is designed to solve a core problem in engineering teams:
 
@@ -24,6 +24,7 @@ Engineering context is spread across:
 - Incident reports
 - Architecture Decision Records (ADRs)
 - Documentation
+- Ownership metadata
 
 This leads to:
 
@@ -95,7 +96,7 @@ Data Sources → Ingestion → Extraction
 
 ```mermaid
 flowchart TD
-    A[Engineering Artifacts<br/>PRs, Incidents, ADRs, Docs, Ownership] --> B[Ingestion + Extraction]
+    A[Engineering Artifacts<br/>PRs, Incidents, ADRs, Docs, Ownership, Workflows] --> B[Ingestion + Extraction]
     B --> C[Engineering Context Graph<br/>Neo4j]
     B --> D[Semantic Retrieval Store<br/>Qdrant]
     B --> E[Semantic Definitions]
@@ -108,12 +109,12 @@ flowchart TD
     G --> H[Risk Analysis]
     H --> I[Policy Engine<br/>Allow, Warn, Review, Block]
     I --> J[Agent Orchestration<br/>LangGraph]
-    J --> K[FastAPI Layer]
+    J --> K[FastAPI Layer<br/>/query, /preflight, /incident-context, /governance-check]
 
     K --> L[Preflight Packet Mode<br/>Before changes]
     K --> M[Incident Context Mode<br/>During on-call]
     K --> N[Context Explorer]
-    K --> O[Governance and Approvals]
+    K --> O[Governance and Approvals<br/>Policy checks, overrides, audit trails]
 ```
 
 ### Data model
