@@ -49,9 +49,9 @@
       </div>
       <nav>
         <a href="#product">Product</a>
+        <a href="#how-it-works">How It Works</a>
         <a href="#vision">Vision</a>
         <a href="#architecture">Architecture</a>
-        <a href="#use-cases">Use Cases</a>
       </nav>
       <div class="nav-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
@@ -72,13 +72,15 @@
           <div class="hero-left">
             <p class="eyebrow">Built by engineers for real engineering workflows</p>
             <h1>
-              Pre-change context
-              and safety for
-              <span>AI coding agents</span>
+              Ship faster
+              with AI
+              agents—
+              <span>without
+              guessing
+              impact</span>
             </h1>
             <p class="sub">
-              Engram gives your team the context it usually has to reconstruct manually: what broke
-              before, what this change touches, and what needs human review.
+              We help teams catch risky code changes before they break production.
             </p>
             <div class="hero-actions">
               <button class="btn btn-primary open-access-modal">Get Early Access</button>
@@ -158,6 +160,76 @@
           <span>DevEx</span>
           <span>AI Tooling Leads</span>
           <span>CTO Offices</span>
+        </div>
+      </section>
+
+      <section class="shell panel reveal" id="how-it-works">
+        <div class="section-title-wrap">
+          <p class="eyebrow">How it works</p>
+          <h2>How it works in 3 steps</h2>
+        </div>
+        <div class="steps-grid">
+          <article>
+            <p class="card-label">Step 1</p>
+            <h3>Capture proposed change</h3>
+            <p>
+              An engineer or AI agent proposes a code change. Engram detects what services and
+              dependencies are touched.
+            </p>
+          </article>
+          <article>
+            <p class="card-label">Step 2</p>
+            <h3>Assemble real context</h3>
+            <p>
+              Engram pulls related incidents, PRs, ADRs, and ownership signals into one packet, so
+              reviewers do not have to reconstruct context manually.
+            </p>
+          </article>
+          <article>
+            <p class="card-label">Step 3</p>
+            <h3>Guide safe action</h3>
+            <p>
+              Teams get clear risk guidance: proceed, review, or pause, helping catch risky changes
+              before production impact.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell panel reveal" id="scenarios">
+        <div class="section-title-wrap">
+          <p class="eyebrow">Scenarios</p>
+          <h2>Where Engram helps most</h2>
+        </div>
+        <div class="scenario-grid">
+          <article>
+            <h3>On-call engineer</h3>
+            <p>
+              During incidents, quickly surface related changes, similar outages, owners, and
+              likely impact paths.
+            </p>
+          </article>
+          <article>
+            <h3>PR reviewer / tech lead</h3>
+            <p>
+              Before merge, see historical risk context and dependency impact to make safer approval
+              decisions.
+            </p>
+          </article>
+          <article>
+            <h3>Platform / DevEx team</h3>
+            <p>
+              Apply policy-aware guardrails so AI-assisted changes follow review and escalation
+              expectations.
+            </p>
+          </article>
+          <article>
+            <h3>New engineer onboarding</h3>
+            <p>
+              Understand service relationships and prior incidents faster without digging through
+              scattered tools.
+            </p>
+          </article>
         </div>
       </section>
 
@@ -305,33 +377,6 @@
 
       <section class="shell panel reveal">
         <div class="section-title-wrap">
-          <p class="eyebrow">Workflow Proof</p>
-          <h2>What changes in day-to-day engineering workflow</h2>
-        </div>
-        <div class="journey-grid">
-          <article>
-            <h3>Preflight Mode (Before change)</h3>
-            <ol>
-              <li>Engineer or AI agent proposes a change.</li>
-              <li>Engram assembles context packet from PRs, incidents, ADRs, and dependencies.</li>
-              <li>Risk is classified and mapped to approval policy.</li>
-              <li>Team proceeds with evidence-linked guidance.</li>
-            </ol>
-          </article>
-          <article>
-            <h3>Incident Mode (After breakage)</h3>
-            <ol>
-              <li>Alert triggers incident context request.</li>
-              <li>Engram retrieves similar incidents, recent changes, owners, and runbooks.</li>
-              <li>Investigation sequence is prioritized with source evidence.</li>
-              <li>On-call engineers decide next action with reduced guesswork.</li>
-            </ol>
-          </article>
-        </div>
-      </section>
-
-      <section class="shell panel reveal">
-        <div class="section-title-wrap">
           <p class="eyebrow">Evidence Panel</p>
           <h2>Source-linked recommendations, never black-box claims</h2>
         </div>
@@ -360,60 +405,6 @@
         </div>
       </section>
 
-      <section id="use-cases" class="shell panel use-cases reveal">
-        <div class="section-title-wrap">
-          <p class="eyebrow">Who It Serves</p>
-          <h2>Engineering teams adopting AI without increasing production risk</h2>
-        </div>
-        <div class="chips">
-          <span>Platform Teams</span>
-          <span>SRE</span>
-          <span>AI Tooling Leads</span>
-          <span>CTO Offices</span>
-          <span>Fast-moving startups</span>
-        </div>
-      </section>
-
-      <section class="shell panel reveal">
-        <div class="section-title-wrap">
-          <p class="eyebrow">Measured Value</p>
-          <h2>Metrics teams can validate in 30-60 days</h2>
-        </div>
-        <div class="kpi-grid">
-          <article><h3>Context Time</h3><p>Reduced time spent gathering review context before risky PRs.</p></article>
-          <article><h3>Risk Visibility</h3><p>Fewer missed historical risks in pre-merge decisions.</p></article>
-          <article><h3>Reliability</h3><p>Reduction trend in risky merges and rollback frequency.</p></article>
-          <article><h3>Onboarding Speed</h3><p>Faster service understanding for new engineers and responders.</p></article>
-        </div>
-      </section>
-
-      <section class="shell panel reveal">
-        <div class="section-title-wrap">
-          <p class="eyebrow">Execution Strategy</p>
-          <h2>Ship a focused wedge, expand with evidence</h2>
-        </div>
-        <div class="phase-grid">
-          <article>
-            <h3>Now (MVP)</h3>
-            <ul>
-              <li>Preflight packet for high-risk services</li>
-              <li>Graph + vector retrieval</li>
-              <li>Evidence-linked risk guidance</li>
-              <li>FastAPI query workflow</li>
-            </ul>
-          </article>
-          <article>
-            <h3>Next (Expansion)</h3>
-            <ul>
-              <li>Incident Mode context packet</li>
-              <li>Policy enforcement refinement</li>
-              <li>Integration depth across toolchain</li>
-              <li>Workflow-level governance controls</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
       <section class="shell panel reveal">
         <div class="section-title-wrap">
           <p class="eyebrow">Trust Boundaries</p>
@@ -430,12 +421,12 @@
       <section class="shell panel reveal">
         <div class="section-title-wrap">
           <p class="eyebrow">Integration Roadmap</p>
-          <h2>Progressive integration without overclaiming</h2>
+          <h2>From pre-change safety to full engineering context</h2>
         </div>
         <div class="roadmap-track">
-          <article><h3>Phase 1</h3><p>GitHub + structured artifacts + preflight packets</p></article>
-          <article><h3>Phase 2</h3><p>Incident tooling context and runbook integration</p></article>
-          <article><h3>Phase 3</h3><p>Policy runtime integration in CI/CD and agent workflows</p></article>
+          <article><h3>Today</h3><p>GitHub-native preflight packets with evidence-backed risk guidance.</p></article>
+          <article><h3>Next</h3><p>Incident context with similar failures, owners, and runbook-linked actions.</p></article>
+          <article><h3>Vision</h3><p>Policy runtime integrated across CI/CD and agent workflows.</p></article>
         </div>
       </section>
 
