@@ -3,7 +3,14 @@
 ### Context-aware control plane for AI-assisted software engineering
 
 > **Canonical direction:** [`website/before-you-build.md`](./website/before-you-build.md)  
-> This README distinguishes **implemented / building / vision**. Do not treat the full control-plane story as shipped product.
+> This README distinguishes **implemented (alpha) / building / vision**. Do not treat the full control-plane story as production SaaS.
+
+### Live demo
+
+- **Try (hosted API):** [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try) — prefer `/try`, not `/site/try.html`
+- **Script:** public GitHub ingest → query / preflight → sample Auth run → reject → run again (prior)
+- **Scope:** public demo only — no BYO clone/run, no merge/push, not multi-tenant SaaS  
+  Details: [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md)
 
 ---
 
@@ -235,23 +242,26 @@ Dogfood: use Engram while building other products (e.g. Havenly)—Engram stays 
 
 ---
 
-## Running V1 / V1.5 / V2
+## Running locally (V1–V3 alpha)
 
-See **[`docs/V1.md`](./docs/V1.md)**, **[`docs/V1.5.md`](./docs/V1.5.md)**, **[`docs/V2.md`](./docs/V2.md)**, **[`docs/V2.5.md`](./docs/V2.5.md)**, and **[`docs/V3.md`](./docs/V3.md)**.
+Versioned guides: [`docs/V1.md`](./docs/V1.md) · [`docs/V1.5.md`](./docs/V1.5.md) · [`docs/V2.md`](./docs/V2.md) · [`docs/V2.5.md`](./docs/V2.5.md) · [`docs/V3.md`](./docs/V3.md) · [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md)
 
 ```bash
 cp .env.example .env
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python main.py seed
-python main.py ingest-github --repo anthropics/claude-cookbooks --limit 100
+python main.py ingest-github --repo anthropics/claude-cookbooks --limit 30
 python main.py serve
-# other terminal: open http://127.0.0.1:8000/try
+# open http://127.0.0.1:8000/try
+pytest
 python main.py eval
+python main.py run
+python main.py resolve --last --decision rejected --note "ADR-12 stands"
 python main.py run
 ```
 
-Docker is optional. Default `ENGRAM_STORE=local` uses a file-backed graph + embedded Qdrant (no Neo4j container). To use Docker:
+Docker is optional. Default `ENGRAM_STORE=local` uses a file-backed graph + embedded Qdrant. For Neo4j + Qdrant containers:
 
 ```bash
 # .env: ENGRAM_STORE=docker
@@ -259,23 +269,19 @@ docker compose up -d
 python main.py seed
 ```
 
-Preflight demo:
+Preflight / agent demo:
 
 ```bash
 python main.py preflight \
   --service "Auth Service" \
   --task "Increase auth session TTL from 24 hours to 7 days"
-```
 
-API docs: `http://localhost:8000/docs`
-
-Thin V2 agent run (git worktree; nothing merged):
-
-```bash
 python main.py run \
   --service "Auth Service" \
   --task "Increase auth session TTL from 24 hours to 7 days"
 ```
+
+API docs: `http://127.0.0.1:8000/docs` · Try UI: `http://127.0.0.1:8000/try` · Meta: `GET /meta`
 
 ---
 
@@ -283,25 +289,26 @@ python main.py run \
 
 ```text
 engram/
-├── api/           FastAPI routes
+├── api/           FastAPI (+ public-mode guards, /try static mount)
 ├── agents/        Thin V2: Manager / Backend worktree / Reviewer
-├── graph/         Neo4j context graph
-├── vector/        Qdrant + embeddings
-├── ingestion/     Sample seed (GitHub path next)
+├── graph/         Neo4j or local file graph
+├── vector/        Qdrant (server or embedded) + embeddings
+├── ingestion/     Sample org seed + GitHub PR/commit ingest
 ├── retrieval/     Hybrid graph + vector retrieval
 ├── routing/       V1.5 context router + V2.5 risk router
-├── learning/      V3 outcome log
+├── learning/      V3 outcome log + similar-task lookup
 ├── preflight/     Risk rules + packet assembly
 ├── provenance/    Evidence helpers
+├── eval/          Retrieval eval harness
 ├── engine.py      LangGraph preflight + agent run
 ├── config.py
 └── models/
 data/sample/       Demo org + sandbox fixtures
-docs/V1.md
-docs/V1.5.md
-docs/V2.md
-docs/V2.5.md
-docs/V3.md
+data/evals/        V1.5 eval cases
+website/           Marketing (Vercel) + Try UI (served by API)
+docs/              V1–V3 + HOSTED_TRY
+Dockerfile         Render / container deploy
+render.yaml        Hosted Try starting point
 ```
 
 ---
@@ -327,7 +334,9 @@ Engram determines:
 
 | Doc | Role |
 |---|---|
-| [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Resume/recruiter hosted Try deploy (tight public scope) |
+| [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Hosted Try deploy, public scope, demo script |
+| [`docs/V1.md`](./docs/V1.md) … [`docs/V3.md`](./docs/V3.md) | Versioned build notes |
 | [`website/before-you-build.md`](./website/before-you-build.md) | Canonical strategic direction (2026) |
 | [`product-vision.md`](./product-vision.md) | Product vision (aligned; see update banner) |
-| [`website/`](./website/) | Marketing site + local try UI (`try.html`) |
+| [`AGENTS.md`](./AGENTS.md) | Non-negotiables for contributors / coding agents |
+| [`website/`](./website/) | Marketing site + Try UI |

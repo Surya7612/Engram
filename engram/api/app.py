@@ -47,8 +47,9 @@ settings = get_settings()
 app = FastAPI(
     title="Engram",
     description=(
-        "Context engine + routers. Public try scope: GitHub ingest, query, preflight, "
-        "sample Auth risk loop. Not a multi-tenant SaaS."
+        "Context, routing & safety layer around coding agents (V1–V3 alpha). "
+        "Public try: GitHub ingest, query, preflight, sample Auth risk loop. "
+        "Not multi-tenant SaaS; candidates are never merged."
     ),
     version=__version__,
     lifespan=lifespan,

@@ -1,4 +1,4 @@
-.PHONY: up down seed health serve preflight eval run outcomes install
+.PHONY: up down seed health serve preflight eval run outcomes install test
 
 up:
 	docker compose up -d
@@ -29,3 +29,6 @@ run:
 
 outcomes:
 	python main.py outcomes --stats
+
+test:
+	pytest

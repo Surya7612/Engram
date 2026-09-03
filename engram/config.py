@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     data_dir: Path = _ROOT / "data" / "sample"
     local_data_dir: Path = _ROOT / ".engram"
 
-    # Hosted try (resume / recruiter demo). Tight scope — not multi-tenant SaaS.
+    # Hosted Try: tight public scope — not multi-tenant SaaS.
     public_mode: bool = Field(default=False, validation_alias="ENGRAM_PUBLIC_MODE")
     seed_on_boot: bool = Field(default=False, validation_alias="ENGRAM_SEED_ON_BOOT")
     cors_origins: str = Field(

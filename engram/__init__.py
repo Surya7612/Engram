@@ -1,3 +1,3 @@
-"""Engram V2 — Context Engine + thin Agent Router."""
+"""Engram — context, routing & safety layer (V1–V3 alpha)."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"

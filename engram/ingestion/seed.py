@@ -79,6 +79,7 @@ def seed_from_sample(settings: Settings, graph=None, vectors: VectorStore | None
                     "service_ids": adr.get("service_ids", []),
                 },
             )
+        embedding_backend = "openai" if vectors.uses_openai else "local-hash"
     finally:
         if owns_stores:
             graph.close()
@@ -90,6 +91,6 @@ def seed_from_sample(settings: Settings, graph=None, vectors: VectorStore | None
         "pull_requests": len(org["pull_requests"]),
         "incidents": len(org["incidents"]),
         "adrs": len(org["adrs"]),
-        "embedding_backend": "openai" if vectors.uses_openai else "local-hash",
+        "embedding_backend": embedding_backend,
         "store": settings.store,
     }

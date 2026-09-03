@@ -3,8 +3,8 @@
 ### Engineering Context, Routing & Safety Layer for AI-assisted software engineering
 
 > **2026 direction update:** The center of gravity moved from “structured engineering memory / RAG” to a **context → routing → controlled execution → verification → governance → learning** control plane.  
-> Canonical write-up: [`website/before-you-build.md`](./website/before-you-build.md) · Summary positioning: [`README.md`](./README.md)  
-> Sections below retain useful problem framing and MVP discipline; treat **routing / agent office / learning** as sequenced vision unless marked implemented.
+> Canonical write-up: [`website/before-you-build.md`](./website/before-you-build.md) · Summary: [`README.md`](./README.md) · Live Try: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)  
+> Sections below retain useful problem framing and MVP discipline; treat **merge automation / learned policies / full AI office** as vision unless marked implemented (V1–V3 alpha).
 
 ---
 

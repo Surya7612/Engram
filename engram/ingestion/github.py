@@ -212,6 +212,7 @@ def ingest_github(
                     "service_ids": item["service_ids"],
                 },
             )
+        embedding_backend = "openai" if vectors.uses_openai else "local-hash"
     finally:
         if owns_stores:
             graph.close()
@@ -231,7 +232,7 @@ def ingest_github(
         "commits": len(commit_artifacts),
         "limit": limit,
         "store": settings.store,
-        "embedding_backend": "openai" if vectors.uses_openai else "local-hash",
+        "embedding_backend": embedding_backend,
         "cleared": False,
         "note": note,
     }

@@ -1,47 +1,55 @@
 # Hosted Try
 
-Tight public scope — not multi-tenant SaaS, not BYO clone/run on the shared host.
+Public demo of Engram’s context → risk → governance loop. **Not** multi-tenant SaaS, **not** BYO clone/run on the shared host.
 
-## Live demo
+## Live URL
 
-- Try UI: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)
-- Prefer `/try` (not `/site/try.html`).
+- **Try:** [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)
+- Prefer `/try` (redirects to the Try UI). Avoid bookmarking `/site/try.html` alone if cold-start messaging confuses you—`/try` is the canonical entry.
 
-## What visitors can do
+## Demo script (2–3 minutes)
 
-On the **API host** (same origin Try UI at `/try`):
+1. **Ingest** a public repo (default example works) → graph + vectors for that service  
+2. **Query** / **Preflight** → evidence-backed answer and risk packet  
+3. **Sample Auth — Run agents** on the TTL task → expect `block` (ADR-12)  
+4. **Reject** with a note → **Run agents** again → prior surfaces as a constraint  
 
-1. Ingest a **public** GitHub repo (capped, default 30 PRs)
-2. Query / preflight on that service
-3. Sample Auth risk loop (seeded on boot): run → reject → run again
+Side guide on the Try page explains each section. Nothing is merged or pushed.
 
-Disabled in `ENGRAM_PUBLIC_MODE=true`: eval harness, BYO clone worktrees, browser-supplied GitHub PATs.
+## Public scope
 
-Optional env: `OPENAI_API_KEY` (better answers), server-side `GITHUB_TOKEN` (rate limits). Browser PATs stay off in public mode.
+| Enabled | Disabled |
+|---|---|
+| Public GitHub ingest (capped) | BYO clone / worktree run |
+| Query + preflight | Eval harness (`POST /eval`) |
+| Sample Auth / Email risk loop | Browser-supplied GitHub PATs |
+| Outcome resolve (approve/reject record) | Multi-tenant isolation |
 
-## Deploy API (Render example)
+Env:
 
-1. Push this repo to GitHub.
-2. Create a Render Web Service from the repo (Docker).
-3. Set env:
-   - `ENGRAM_PUBLIC_MODE=true`
-   - `ENGRAM_SEED_ON_BOOT=true`
-   - `ENGRAM_CORS_ORIGINS=https://YOUR-VERCEL-DOMAIN` (comma-separated if multiple)
-   - Optional: `OPENAI_API_KEY`, `GITHUB_TOKEN`
-4. After deploy, open `https://YOUR-RENDER-HOST/try`.
+- Required for hosted: `ENGRAM_PUBLIC_MODE=true`, `ENGRAM_SEED_ON_BOOT=true`, `ENGRAM_STORE=local`
+- Optional: `OPENAI_API_KEY` (better answers), server-side `GITHUB_TOKEN` (rate limits), `ENGRAM_CORS_ORIGINS` (Vercel marketing domain)
 
-`render.yaml` is a starting point.
+## Deploy (Render)
 
-## Vercel marketing site
+1. Push this repo to GitHub.  
+2. Web Service from repo (Docker; see `Dockerfile` / `render.yaml`).  
+3. Set the env vars above.  
+4. Open `https://<service>.onrender.com/try`.
 
-Keep `website/` on Vercel. Point CTAs to the Render Try URL (`https://engram-cjph.onrender.com/try`).
+Free-tier cold starts can take a minute—use **Check API** if the first request fails.
 
-`website/config.js` sets `apiBase` to that host so a static Try page can still call the API.
+## Vercel marketing
+
+Keep `website/` on Vercel. CTAs should open the Render Try URL.
+
+`website/config.js` sets `apiBase` to the Render host so a static Try page can still call the API (CORS must allow the Vercel origin).
 
 ## Local builder mode
 
 ```bash
 ENGRAM_PUBLIC_MODE=false python main.py serve
+# http://127.0.0.1:8000/try
 ```
 
-Full clone/run and eval remain available locally.
+Full clone/run and eval remain available locally. See [`README.md`](../README.md).
