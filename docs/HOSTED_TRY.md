@@ -1,8 +1,13 @@
-# Hosted Try (resume / recruiter demo)
+# Hosted Try
 
 Tight public scope — not multi-tenant SaaS, not BYO clone/run on the shared host.
 
-## What recruiters can do
+## Live demo
+
+- Try UI: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)
+- Prefer `/try` (not `/site/try.html`).
+
+## What visitors can do
 
 On the **API host** (same origin Try UI at `/try`):
 
@@ -12,6 +17,8 @@ On the **API host** (same origin Try UI at `/try`):
 
 Disabled in `ENGRAM_PUBLIC_MODE=true`: eval harness, BYO clone worktrees, browser-supplied GitHub PATs.
 
+Optional env: `OPENAI_API_KEY` (better answers), server-side `GITHUB_TOKEN` (rate limits). Browser PATs stay off in public mode.
+
 ## Deploy API (Render example)
 
 1. Push this repo to GitHub.
@@ -20,24 +27,16 @@ Disabled in `ENGRAM_PUBLIC_MODE=true`: eval harness, BYO clone worktrees, browse
    - `ENGRAM_PUBLIC_MODE=true`
    - `ENGRAM_SEED_ON_BOOT=true`
    - `ENGRAM_CORS_ORIGINS=https://YOUR-VERCEL-DOMAIN` (comma-separated if multiple)
-   - Optional: `OPENAI_API_KEY`, `GITHUB_TOKEN` (server-side rate limits / better answers)
+   - Optional: `OPENAI_API_KEY`, `GITHUB_TOKEN`
 4. After deploy, open `https://YOUR-RENDER-HOST/try`.
 
 `render.yaml` is a starting point.
 
 ## Vercel marketing site
 
-Keep `website/` on Vercel. Point CTAs to the Render Try URL.
+Keep `website/` on Vercel. Point CTAs to the Render Try URL (`https://engram-cjph.onrender.com/try`).
 
-Optional: set `website/config.js`:
-
-```js
-window.ENGRAM_CONFIG = {
-  apiBase: "https://YOUR-RENDER-HOST",
-};
-```
-
-If recruiters use Render `/try` directly, `apiBase` can stay empty (same origin).
+`website/config.js` sets `apiBase` to that host so a static Try page can still call the API.
 
 ## Local builder mode
 
