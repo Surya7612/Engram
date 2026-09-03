@@ -1,5 +1,5 @@
-// Default: empty apiBase → same-origin when served from the API (/try),
-// or localhost:8000 when opened from Vercel/static without a configured host.
+// When Try is served from the API host (/try), empty apiBase uses same-origin.
+// Set explicitly so Vercel marketing/static Try can still reach the hosted API.
 window.ENGRAM_CONFIG = {
-  apiBase: "",
+  apiBase: "https://engram-cjph.onrender.com",
 };

@@ -1,6 +1,5 @@
-// Copy to config.js and set apiBase after you deploy the API.
-// On Render /try (same origin), leave apiBase empty.
+// Copy to config.js after you deploy the API.
+// On Render /try, empty apiBase uses same-origin; setting the Render URL also works.
 window.ENGRAM_CONFIG = {
-  // Example: "https://engram-api.onrender.com"
-  apiBase: "",
+  apiBase: "https://engram-cjph.onrender.com",
 };

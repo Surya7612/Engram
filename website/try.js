@@ -152,7 +152,7 @@ function explainFetchError(err, base) {
   if (/failed to fetch|networkerror|load failed/i.test(msg)) {
     return [
       `Cannot reach API at ${base}.`,
-      "Open the deployed API host /try (same origin), or set website/config.js apiBase.",
+      "Open https://engram-cjph.onrender.com/try (same origin), or set website/config.js apiBase.",
       "Local builder: source .venv/bin/activate && python main.py serve → http://127.0.0.1:8000/try",
       "See docs/HOSTED_TRY.md",
     ].join("\n");
@@ -189,6 +189,8 @@ function applyCapabilities(caps) {
   capabilities = { ...capabilities, ...(caps || {}) };
   const clone = $("clone-run");
   if (clone) clone.hidden = capabilities.clone_run === false;
+  const guideClone = $("guideClone");
+  if (guideClone) guideClone.hidden = capabilities.clone_run === false;
   const tokenWrap = $("tokenWrap");
   if (tokenWrap) tokenWrap.hidden = capabilities.accept_client_github_token === false;
   const limitInput = $("limit");
@@ -200,6 +202,28 @@ function applyCapabilities(caps) {
   if (scope && capabilities.clone_run === false) {
     scope.hidden = false;
   }
+}
+
+function watchGuide() {
+  const cards = [...document.querySelectorAll(".try-guide-card[data-guide-for]")];
+  if (!cards.length || !("IntersectionObserver" in window)) return;
+  const sections = cards
+    .map((card) => document.getElementById(card.getAttribute("data-guide-for")))
+    .filter(Boolean);
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      const id = visible.target.id;
+      cards.forEach((card) => {
+        card.classList.toggle("is-active", card.getAttribute("data-guide-for") === id);
+      });
+    },
+    { rootMargin: "-20% 0px -55% 0px", threshold: [0.1, 0.35, 0.6] }
+  );
+  sections.forEach((section) => observer.observe(section));
 }
 
 async function boot() {
@@ -384,3 +408,4 @@ if ($("cloneRunBtn")) {
 }
 
 boot();
+watchGuide();

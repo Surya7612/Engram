@@ -15,8 +15,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=20260902-mkt2" />
-    <link rel="stylesheet" href="./try.css?v=20260903-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260903-try1" />
+    <link rel="stylesheet" href="./try.css?v=20260903-2" />
   </head>
   <body data-theme="dark">
     <div class="bg-grid"></div>
@@ -38,131 +38,181 @@
       </nav>
     </header>
 
-    <main class="shell try-main">
-      <h1>Try Engram</h1>
-      <p class="try-lead">
-        Ingest a <strong>public GitHub</strong> repo → query / preflight, plus the
-        <strong>sample Auth</strong> risk loop (ADR gate, worktree, human resolve). Not multi-tenant SaaS;
-        nothing is merged.
-      </p>
-      <p id="scopeNote" class="try-note" hidden></p>
-      <div id="hostedBanner" class="try-banner" hidden>
-        <strong>This static page cannot reach a local API.</strong>
-        Use the deployed API Try URL (<code>https://&lt;api-host&gt;/try</code>), or set
-        <code>website/config.js</code> <code>apiBase</code>. Builders: 
-        <code>python main.py serve</code> → <a href="http://127.0.0.1:8000/try">http://127.0.0.1:8000/try</a>.
-        See <code>docs/HOSTED_TRY.md</code>.
-      </div>
-
-      <section class="try-panel" aria-labelledby="connect-title">
-        <h2 id="connect-title">1. Your GitHub — connect</h2>
-        <label>
-          API base
-          <input id="apiBase" type="url" value="" autocomplete="off" />
-        </label>
-        <label>
-          GitHub repo
-          <input
-            id="repo"
-            type="text"
-            placeholder="owner/name or https://github.com/owner/name"
-            value="anthropics/claude-cookbooks"
-            autocomplete="off"
-          />
-        </label>
-        <label>
-          Service name <span class="optional">(optional)</span>
-          <input id="service" type="text" placeholder="defaults from repo name" autocomplete="off" />
-        </label>
-        <label>
-          Limit
-          <input id="limit" type="number" min="1" max="50" value="30" />
-        </label>
-        <label id="tokenWrap">
-          GitHub token <span class="optional">(local/dev only)</span>
-          <input id="token" type="password" placeholder="ghp_…" autocomplete="off" />
-        </label>
-        <p class="try-note">
-          Public demo rejects browser PATs. Use public repos. Local/dev can pass a token to your own API.
-        </p>
-        <div class="try-actions">
-          <button type="button" class="btn btn-primary" id="ingestBtn">Ingest repo</button>
-          <button type="button" class="btn btn-ghost" id="healthBtn">Check API</button>
-        </div>
-        <div id="ingestOut" class="try-out try-out-plain" hidden></div>
-      </section>
-
-      <section class="try-panel" aria-labelledby="ask-title">
-        <h2 id="ask-title">2. Your GitHub — ask</h2>
-        <label>
-          Service
-          <input id="askService" type="text" placeholder="filled after ingest" autocomplete="off" />
-        </label>
-        <label>
-          Question
-          <textarea id="question" rows="3">What recently changed in this repository?</textarea>
-        </label>
-        <div class="try-actions">
-          <button type="button" class="btn btn-primary" id="queryBtn">Query</button>
-          <button type="button" class="btn btn-ghost" id="preflightBtn">Preflight</button>
-        </div>
-        <label>
-          Task <span class="optional">(preflight)</span>
-          <textarea id="task" rows="2">Summarize recent pull-request risk for this service</textarea>
-        </label>
-        <div id="askOut" class="try-out" hidden></div>
-      </section>
-
-      <section class="try-panel" id="clone-run" aria-labelledby="clone-title">
-        <h2 id="clone-title">2b. Your GitHub — run on clone</h2>
-        <p class="try-note">
-          Clones the ingested repo into <code>.engram/clones/</code>, opens a worktree, and lets the backend
-          propose a candidate. No merge/push. Risk gates are thin without ADRs/incidents—sample Auth (section 3)
-          is still the full risk demo.
-        </p>
-        <label>
-          Service
-          <input id="cloneService" type="text" placeholder="same as ask service after ingest" autocomplete="off" />
-        </label>
-        <label>
-          Task
-          <textarea id="cloneTask" rows="2">Add a short note that Engram opened a worktree on this repository</textarea>
-        </label>
-        <div class="try-actions">
-          <button type="button" class="btn btn-primary" id="cloneRunBtn">Run on clone</button>
-        </div>
-        <div id="cloneOut" class="try-out" hidden></div>
-      </section>
-
-      <section class="try-panel" id="risk" aria-labelledby="risk-title">
-        <h2 id="risk-title">3. Sample Auth — risk loop</h2>
-        <p class="try-note">
-          Uses the demo org (ADR-12 TTL cap, incidents, git worktree). Not your GitHub repo. Nothing is merged.
-        </p>
-        <label>
-          Task
-          <textarea id="riskTask" rows="2">Increase auth session TTL from 24 hours to 7 days</textarea>
-        </label>
-        <div class="try-actions">
-          <button type="button" class="btn btn-ghost" id="seedBtn">Seed sample org</button>
-          <button type="button" class="btn btn-primary" id="runBtn">Run agents</button>
-        </div>
-        <div id="runOut" class="try-out" hidden></div>
-        <div class="try-resolve" id="resolveBox" hidden>
-          <label>
-            Resolve note
-            <input id="resolveNote" type="text" value="ADR-12 stands" autocomplete="off" />
-          </label>
-          <div class="try-actions">
-            <button type="button" class="btn btn-primary" id="rejectBtn">Reject</button>
-            <button type="button" class="btn btn-ghost" id="approveBtn">Approve (record only)</button>
+    <main class="shell try-page">
+      <div class="try-layout">
+        <div class="try-flow">
+          <h1>Try Engram</h1>
+          <p class="try-lead">
+            Ingest a <strong>public GitHub</strong> repo → query / preflight, plus the
+            <strong>sample Auth</strong> risk loop (ADR gate, worktree, human resolve). Not multi-tenant SaaS;
+            nothing is merged.
+          </p>
+          <p id="scopeNote" class="try-note" hidden></p>
+          <div id="hostedBanner" class="try-banner" hidden>
+            <strong>Cannot reach the Engram API.</strong>
+            Prefer
+            <a href="https://engram-cjph.onrender.com/try">https://engram-cjph.onrender.com/try</a>
+            (same-origin). If the service is waking up, wait a few seconds and click Check API.
+            Builders: <code>python main.py serve</code> →
+            <a href="http://127.0.0.1:8000/try">http://127.0.0.1:8000/try</a>.
           </div>
-          <p class="try-note">Approve does not merge. Reject so the next run can surface this prior.</p>
+
+          <section class="try-panel" id="connect" aria-labelledby="connect-title">
+            <h2 id="connect-title">1. Your GitHub — connect</h2>
+            <label>
+              API base
+              <input id="apiBase" type="url" value="" autocomplete="off" />
+            </label>
+            <label>
+              GitHub repo
+              <input
+                id="repo"
+                type="text"
+                placeholder="owner/name or https://github.com/owner/name"
+                value="anthropics/claude-cookbooks"
+                autocomplete="off"
+              />
+            </label>
+            <label>
+              Service name <span class="optional">(optional)</span>
+              <input id="service" type="text" placeholder="defaults from repo name" autocomplete="off" />
+            </label>
+            <label>
+              Limit
+              <input id="limit" type="number" min="1" max="50" value="30" />
+            </label>
+            <label id="tokenWrap">
+              GitHub token <span class="optional">(local/dev only)</span>
+              <input id="token" type="password" placeholder="ghp_…" autocomplete="off" />
+            </label>
+            <p class="try-note">
+              Public demo rejects browser PATs. Use public repos. Local/dev can pass a token to your own API.
+            </p>
+            <div class="try-actions">
+              <button type="button" class="btn btn-primary" id="ingestBtn">Ingest repo</button>
+              <button type="button" class="btn btn-ghost" id="healthBtn">Check API</button>
+            </div>
+            <div id="ingestOut" class="try-out try-out-plain" hidden></div>
+          </section>
+
+          <section class="try-panel" id="ask" aria-labelledby="ask-title">
+            <h2 id="ask-title">2. Your GitHub — ask</h2>
+            <label>
+              Service
+              <input id="askService" type="text" placeholder="filled after ingest" autocomplete="off" />
+            </label>
+            <label>
+              Question
+              <textarea id="question" rows="3">What recently changed in this repository?</textarea>
+            </label>
+            <div class="try-actions">
+              <button type="button" class="btn btn-primary" id="queryBtn">Query</button>
+              <button type="button" class="btn btn-ghost" id="preflightBtn">Preflight</button>
+            </div>
+            <label>
+              Task <span class="optional">(preflight)</span>
+              <textarea id="task" rows="2">Summarize recent pull-request risk for this service</textarea>
+            </label>
+            <div id="askOut" class="try-out" hidden></div>
+          </section>
+
+          <section class="try-panel" id="clone-run" aria-labelledby="clone-title">
+            <h2 id="clone-title">2b. Your GitHub — run on clone</h2>
+            <p class="try-note">
+              Clones the ingested repo into <code>.engram/clones/</code>, opens a worktree, and lets the backend
+              propose a candidate. No merge/push. Risk gates are thin without ADRs/incidents—sample Auth (section 3)
+              is still the full risk demo.
+            </p>
+            <label>
+              Service
+              <input id="cloneService" type="text" placeholder="same as ask service after ingest" autocomplete="off" />
+            </label>
+            <label>
+              Task
+              <textarea id="cloneTask" rows="2">Add a short note that Engram opened a worktree on this repository</textarea>
+            </label>
+            <div class="try-actions">
+              <button type="button" class="btn btn-primary" id="cloneRunBtn">Run on clone</button>
+            </div>
+            <div id="cloneOut" class="try-out" hidden></div>
+          </section>
+
+          <section class="try-panel" id="risk" aria-labelledby="risk-title">
+            <h2 id="risk-title">3. Sample Auth — risk loop</h2>
+            <p class="try-note">
+              Uses the demo org (ADR-12 TTL cap, incidents, git worktree). Not your GitHub repo. Nothing is merged.
+            </p>
+            <label>
+              Task
+              <textarea id="riskTask" rows="2">Increase auth session TTL from 24 hours to 7 days</textarea>
+            </label>
+            <div class="try-actions">
+              <button type="button" class="btn btn-ghost" id="seedBtn">Seed sample org</button>
+              <button type="button" class="btn btn-primary" id="runBtn">Run agents</button>
+            </div>
+            <div id="runOut" class="try-out" hidden></div>
+            <div class="try-resolve" id="resolveBox" hidden>
+              <label>
+                Resolve note
+                <input id="resolveNote" type="text" value="ADR-12 stands" autocomplete="off" />
+              </label>
+              <div class="try-actions">
+                <button type="button" class="btn btn-primary" id="rejectBtn">Reject</button>
+                <button type="button" class="btn btn-ghost" id="approveBtn">Approve (record only)</button>
+              </div>
+              <p class="try-note">Approve does not merge. Reject so the next run can surface this prior.</p>
+            </div>
+            <div id="resolveOut" class="try-out try-out-plain" hidden></div>
+          </section>
         </div>
-        <div id="resolveOut" class="try-out try-out-plain" hidden></div>
-      </section>
+
+        <aside class="try-guide" aria-label="What each section means">
+          <p class="try-guide-kicker">Guide</p>
+          <h2>What each step is for</h2>
+          <p class="try-guide-intro">
+            Engram is a control plane around coding agents—not a chatbot over your repo. Prefer
+            <a href="https://engram-cjph.onrender.com/try">/try</a> on this host.
+          </p>
+
+          <a class="try-guide-card" href="#connect" data-guide-for="connect">
+            <strong>1 · Connect</strong>
+            <span class="aim">Aim: load public GitHub into the context substrate.</span>
+            <span
+              ><em>Ingest</em> fetches PRs (or commits) and writes them into the graph + vectors as a
+              named service. No clone, no merge.</span
+            >
+          </a>
+
+          <a class="try-guide-card" href="#ask" data-guide-for="ask">
+            <strong>2 · Ask</strong>
+            <span class="aim">Aim: see task-specific context with provenance.</span>
+            <span
+              ><em>Query</em> answers from retrieved evidence. <em>Preflight</em> builds a risk/policy
+              packet (what matters before anyone edits code).</span
+            >
+          </a>
+
+          <a class="try-guide-card" href="#clone-run" data-guide-for="clone-run" id="guideClone">
+            <strong>2b · Run on clone</strong>
+            <span class="aim">Aim: candidate change in a disposable worktree.</span>
+            <span
+              >Local/dev only on the public demo. Thin without ADRs—use section 3 for the full gate
+              story.</span
+            >
+          </a>
+
+          <a class="try-guide-card" href="#risk" data-guide-for="risk">
+            <strong>3 · Sample Auth</strong>
+            <span class="aim">Aim: risk routing + human governance.</span>
+            <span
+              ><em>Run agents</em> hits ADR-12 (TTL cap) → usually <em>block</em>. <em>Reject</em>
+              records a prior; run again to see learning-layer lookup (not a trained policy).</span
+            >
+          </a>
+        </aside>
+      </div>
     </main>
-    <script src="./config.js?v=20260903-1"></script>
-    <script src="./try.js?v=20260903-1"></script>
+    <script src="./config.js?v=20260903-2"></script>
+    <script src="./try.js?v=20260903-2"></script>
   </body>
 </html>

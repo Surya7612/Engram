@@ -17,14 +17,26 @@
   font-size: 0.85em;
 }
 
-.try-main {
+.try-page {
   position: relative;
   z-index: 2;
   padding: 6rem 0 4rem;
+  max-width: 1120px;
+}
+
+.try-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: 2rem 2.25rem;
+  align-items: start;
+}
+
+.try-flow {
+  min-width: 0;
   max-width: 720px;
 }
 
-.try-main h1 {
+.try-flow h1 {
   font-family: Sora, Inter, sans-serif;
   font-size: clamp(1.8rem, 4vw, 2.4rem);
   margin: 0 0 0.75rem;
@@ -42,10 +54,96 @@
   line-height: 1.55;
 }
 
+.try-guide {
+  position: sticky;
+  top: 5.5rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.try-guide-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.try-guide h2 {
+  font-family: Sora, Inter, sans-serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.55rem;
+}
+
+.try-guide-intro {
+  margin: 0 0 1rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.try-guide-intro a {
+  color: var(--accent);
+}
+
+.try-guide-card {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.try-guide-card:last-child {
+  margin-bottom: 0;
+}
+
+.try-guide-card:hover,
+.try-guide-card.is-active {
+  border-color: rgba(95, 150, 255, 0.4);
+  background: rgba(95, 150, 255, 0.08);
+  color: inherit;
+}
+
+.try-guide-card strong {
+  font-family: Sora, Inter, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.try-guide-card .aim {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.35;
+}
+
+.try-guide-card span:not(.aim) {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.try-guide-card em {
+  font-style: normal;
+  color: var(--text);
+  font-weight: 500;
+}
+
 .try-panel {
   margin: 0 0 1.75rem;
   padding: 1.25rem 0;
   border-top: 1px solid var(--border);
+  scroll-margin-top: 5.5rem;
 }
 
 .try-panel h2 {
@@ -176,4 +274,19 @@
 .nav .brand {
   text-decoration: none;
   color: inherit;
+}
+
+@media (max-width: 900px) {
+  .try-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .try-guide {
+    position: static;
+    order: -1;
+  }
+
+  .try-flow {
+    max-width: none;
+  }
 }
