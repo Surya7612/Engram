@@ -1,0 +1,221 @@
+{
+  "organization": "demo-org",
+  "services": [
+    {
+      "id": "svc-auth",
+      "name": "Auth Service",
+      "owner": "Platform Team",
+      "criticality": "high",
+      "description": "Handles authentication, session validation, and token refresh for all user-facing apps."
+    },
+    {
+      "id": "svc-web",
+      "name": "Web App",
+      "owner": "Frontend Team",
+      "criticality": "medium",
+      "description": "Customer-facing web application."
+    },
+    {
+      "id": "svc-api-gateway",
+      "name": "API Gateway",
+      "owner": "Platform Team",
+      "criticality": "high",
+      "description": "Routes external traffic to internal services."
+    },
+    {
+      "id": "svc-email",
+      "name": "Email Service",
+      "owner": "Growth Team",
+      "criticality": "low",
+      "description": "Transactional email delivery."
+    },
+    {
+      "id": "svc-redis",
+      "name": "Redis Cache",
+      "owner": "Platform Team",
+      "criticality": "high",
+      "description": "Session and auth token cache layer."
+    },
+    {
+      "id": "svc-user",
+      "name": "User Service",
+      "owner": "Platform Team",
+      "criticality": "high",
+      "description": "User profile and identity records."
+    },
+    {
+      "id": "svc-payments",
+      "name": "Payments Service",
+      "owner": "Fintech Team",
+      "criticality": "high",
+      "description": "Invoice rendering, PDF cache, and payment confirmation emails."
+    }
+  ],
+  "dependencies": [
+    { "from": "svc-web", "to": "svc-api-gateway" },
+    { "from": "svc-api-gateway", "to": "svc-auth" },
+    { "from": "svc-auth", "to": "svc-redis" },
+    { "from": "svc-auth", "to": "svc-user" },
+    { "from": "svc-auth", "to": "svc-email" },
+    { "from": "svc-payments", "to": "svc-email" }
+  ],
+  "pull_requests": [
+    {
+      "id": "pr-123",
+      "number": 123,
+      "title": "Cache invalidation update",
+      "status": "open",
+      "summary": "Updates Redis cache invalidation strategy for auth session keys after TTL changes.",
+      "service_ids": ["svc-auth", "svc-redis"]
+    },
+    {
+      "id": "pr-116",
+      "number": 116,
+      "title": "Session expiry guardrails",
+      "status": "merged",
+      "summary": "Adds guardrails around session expiry edge cases during token refresh.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "pr-201",
+      "number": 201,
+      "title": "Document TTL in auth runbook",
+      "status": "merged",
+      "summary": "Adds TTL, session TTL, and token TTL terminology to the auth operator runbook. No runtime behavior change.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "pr-202",
+      "number": 202,
+      "title": "TTL dashboard labels",
+      "status": "merged",
+      "summary": "Renames Grafana panels to Session TTL, Refresh TTL, and Redis TTL for auth metrics.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "pr-203",
+      "number": 203,
+      "title": "TTL FAQ for support",
+      "status": "merged",
+      "summary": "Support FAQ explaining what TTL means for login sessions. Docs only.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "pr-310",
+      "number": 310,
+      "title": "Invoice PDF cache TTL",
+      "status": "open",
+      "summary": "Raises invoice PDF cache TTL from 1 hour to 24 hours in Payments Service.",
+      "service_ids": ["svc-payments"]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-521",
+      "number": 521,
+      "title": "Auth failures on login",
+      "status": "resolved",
+      "summary": "Elevated login failures traced to stale session cache entries after deploy.",
+      "service_ids": ["svc-auth", "svc-redis"]
+    },
+    {
+      "id": "inc-480",
+      "number": 480,
+      "title": "Token refresh timeout",
+      "status": "investigating",
+      "summary": "Users intermittently fail token refresh under load; investigating Redis TTL parity.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "inc-307",
+      "number": 307,
+      "title": "Elevated error rate",
+      "status": "resolved",
+      "summary": "Auth service error rate spike linked to downstream user service latency.",
+      "service_ids": ["svc-auth", "svc-user"]
+    },
+    {
+      "id": "inc-45",
+      "number": 45,
+      "title": "Session invalidation cascade",
+      "status": "resolved",
+      "summary": "Session invalidation bug caused widespread auth failures similar to TTL mismatch scenarios.",
+      "service_ids": ["svc-auth", "svc-redis"],
+      "related_pr_ids": ["pr-123"]
+    },
+    {
+      "id": "inc-610",
+      "number": 610,
+      "title": "TTL scrape delay",
+      "status": "resolved",
+      "summary": "Prometheus scrape delay made auth TTL gauges look stale. Monitoring only; sessions were fine.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "inc-611",
+      "number": 611,
+      "title": "TTL alert noise",
+      "status": "resolved",
+      "summary": "Noisy TTL alerts on auth from a misconfigured threshold. No user impact.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "inc-612",
+      "number": 612,
+      "title": "TTL log spam",
+      "status": "resolved",
+      "summary": "Debug logging printed TTL on every auth request and filled disk.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "inc-77",
+      "number": 77,
+      "title": "Redis eviction after lifetime increase",
+      "status": "resolved",
+      "summary": "Raising identity credential lifetime caused Redis to evict hot keys and cascade login failures. Fix required eviction policy, not just the application constant.",
+      "service_ids": ["svc-redis"]
+    },
+    {
+      "id": "inc-901",
+      "number": 901,
+      "title": "Invoice PDF TTL mismatch",
+      "status": "resolved",
+      "summary": "Payments PDF cache TTL did not match invoice regeneration, serving stale bills. Unrelated to authentication.",
+      "service_ids": ["svc-payments"]
+    }
+  ],
+  "adrs": [
+    {
+      "id": "adr-09",
+      "number": 9,
+      "title": "Auth ownership model",
+      "status": "accepted",
+      "content": "Auth Service is owned by Platform Team. High-risk auth changes require owner review and security sign-off.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "adr-12",
+      "number": 12,
+      "title": "Redis TTL strategy",
+      "status": "accepted",
+      "content": "Auth session keys in Redis must use a max TTL of 48 hours unless explicitly approved by Platform Team. Cache invalidation must preserve parity across auth nodes.",
+      "service_ids": ["svc-auth", "svc-redis"]
+    },
+    {
+      "id": "adr-40",
+      "number": 40,
+      "title": "Q4 identity lifetime freeze",
+      "status": "accepted",
+      "content": "During quarter close, identity credential lifetime for customer logins stays at 48 hours for finance audit. Extending that lifetime needs Platform plus finance approval.",
+      "service_ids": ["svc-auth"]
+    },
+    {
+      "id": "adr-50",
+      "number": 50,
+      "title": "Invoice PDF cache policy",
+      "status": "accepted",
+      "content": "Payments invoice PDFs may cache at most 24 hours. Do not reuse Auth Service lifetime rules.",
+      "service_ids": ["svc-payments"]
+    }
+  ]
+}

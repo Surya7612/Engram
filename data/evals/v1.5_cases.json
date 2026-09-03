@@ -1,0 +1,30 @@
+[
+  {
+    "id": "auth-ttl",
+    "service": "Auth Service",
+    "task": "Increase auth session TTL from 24 hours to 7 days",
+    "required_ids": ["adr-12", "adr-40", "inc-77"],
+    "waste_ids": ["inc-901", "pr-310", "adr-50"]
+  },
+  {
+    "id": "token-refresh-incident",
+    "service": "Auth Service",
+    "task": "Investigate token refresh timeout incident for on-call",
+    "required_ids": ["inc-480", "pr-116"],
+    "waste_ids": ["inc-901", "adr-50"]
+  },
+  {
+    "id": "email-copy",
+    "service": "Email Service",
+    "task": "Fix a typo in the password-reset email copy",
+    "required_ids": ["svc-email"],
+    "waste_ids": ["inc-45", "inc-480", "inc-521", "adr-12", "inc-901", "inc-77"]
+  },
+  {
+    "id": "auth-ownership",
+    "service": "Auth Service",
+    "task": "Who owns Auth Service and what review is required for auth changes?",
+    "required_ids": ["adr-09", "svc-auth"],
+    "waste_ids": ["inc-901", "adr-50"]
+  }
+]

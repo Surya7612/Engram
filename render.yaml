@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: engram-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENGRAM_STORE
+        value: local
+      - key: ENGRAM_PUBLIC_MODE
+        value: "true"
+      - key: ENGRAM_SEED_ON_BOOT
+        value: "true"
+      - key: ENGRAM_PUBLIC_INGEST_LIMIT
+        value: "30"
+      - key: ENGRAM_CORS_ORIGINS
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false

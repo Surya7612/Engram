@@ -1,337 +1,333 @@
-# Engram — Engineering Context & Safety Layer
+# Engram — Engineering Context, Routing & Safety Layer
 
-### Pre-change context, risk, and safety system for AI-assisted engineering
+### Context-aware control plane for AI-assisted software engineering
+
+> **Canonical direction:** [`website/before-you-build.md`](./website/before-you-build.md)  
+> This README distinguishes **implemented / building / vision**. Do not treat the full control-plane story as shipped product.
 
 ---
 
 ## Overview
 
-**Engram** is an agentic AI system that models engineering context as a **knowledge graph with semantic grounding**, enabling **hybrid retrieval (graph + vector)** and **evidence-backed reasoning** over system relationships.
+**Engram** is an engineering context and safety system for AI-assisted software development.
 
-It is designed to solve a core problem in engineering teams:
+It builds a structured model of a software organization across source code, services, pull requests, incidents, architectural decisions, documentation, ownership, and operational history—then uses that model to determine:
 
-> Critical knowledge about systems (PRs, incidents, decisions, and docs) is fragmented and implicit, making it hard to understand, debug, and evolve systems reliably.
+1. **What context** an AI agent needs for a task  
+2. **Which agent / model / tools** should perform the work  
+3. **What verification** is required before a change can proceed  
 
-Instead of relying on an LLM to guess meaning from raw text, Engram structures engineering knowledge into explicit entities, relationships, and definitions so responses are more consistent, traceable, and useful.
+### Core principle
 
----
+> AI engineering agents should not operate only on the code they can see.  
+> They should operate within the technical history, constraints, ownership boundaries, and risk model of the system they are changing.
 
-## Problem
+Rather than treating engineering knowledge as passive documentation—or retrieving the same context for every request—Engram constructs **task-specific context** and **execution policies**.
 
-Engineering context is spread across:
+### Thesis (2026)
 
-- Pull Requests
-- Incident reports
-- Architecture Decision Records (ADRs)
-- Documentation
-- Ownership metadata
+```text
+Engineering intent
+  → task-specific context
+  → risk-aware routing
+  → controlled agent execution
+  → independent verification
+  → organizational learning
+```
 
-This leads to:
-
-- Slow onboarding
-- Repeated mistakes
-- Poor system understanding
-- Risky changes
-- Loss of historical context across teams
-
-LLMs alone are insufficient because they:
-
-- are stateless
-- lack structured relationships
-- may produce inconsistent answers
-- do not preserve system evolution over time
+The knowledge graph, Neo4j, Qdrant, and provenance remain foundational—but they are the **substrate**, not the whole product.
 
 ---
 
-## Solution
+## What Engram is (and is not)
 
-Engram introduces a **structured memory layer** for engineering systems:
+| Engram is | Engram is not |
+|---|---|
+| Context, routing & safety layer **around** coding agents | Another coding agent / Copilot replacement |
+| Risk-aware context + capability + verification control | “OpenRouter, but for coding agents” |
+| Evidence-linked, policy-constrained execution | Unrestricted multi-agent autonomy |
+| Empirical learning from engineering outcomes (log now; policies later) | Pure RAG over docs |
 
-1. Extracts entities such as services, PRs, incidents, and decisions
-2. Builds explicit relationships between them
-3. Stores structured relationships in a graph database
-4. Stores semantic representations for flexible retrieval
-5. Uses an agentic workflow to retrieve, combine, and reason over grounded context
-6. Applies a semantic layer so the system reasons over defined meaning, not just text similarity
-
----
-
-## Core Idea
-
-The system is built on a simple principle:
-
-> LLMs should not be the source of truth for engineering knowledge.  
-> They should reason over structured context that the system already understands.
-
-Engram’s value comes from combining:
-
-- **Graph structure** for explicit relationships
-- **Vector retrieval** for semantic recall
-- **Semantic grounding** for consistency
-- **Agent orchestration** for reliable query flow
+**Moat thesis:** risk-aware, outcome-learning context and capability routing for engineering agents—not multi-agent orchestration alone, not graphs alone, not vectors alone.
 
 ---
 
-## Architecture
+## Six planes (system model)
 
-### Data flow
+| Plane | Question |
+|---|---|
+| **Context** | What does this organization know about this task? |
+| **Routing** | Which context, agent, tools, and model should handle it? |
+| **Execution** | How should the work be decomposed and performed? |
+| **Verification** | Is the proposed change correct and safe? |
+| **Governance** | Can this happen automatically, or does a human approve? |
+| **Learning** | What did the outcome teach Engram about future tasks? |
+
+---
+
+## Three connected graphs
+
+```text
+ENGINEERING CONTEXT GRAPH     What does the system know?
+  Services, code, PRs, incidents, ADRs, docs, ownership, deps, history
+
+TASK / WORK GRAPH             What needs to happen?
+  Objectives, subtasks, dependencies, constraints, evidence, risk
+
+AGENT / CAPABILITY GRAPH      Who or what should perform it?
+  Skills, models, tools, permissions, cost, latency, reliability
+```
+
+Together these let Engram reason about **relevant information** and **how work should be performed safely**.
+
+---
+
+## Three routing problems
+
+### Context routing
+Which engineering knowledge enters an agent’s working context for *this* task?  
+A DB migration may need schema history + related incidents; a UI copy change may need almost none.
+
+### Capability routing
+Which agent, model, and tools fit the work—based on requirements, permissions, historical performance, cost, and latency?
+
+### Risk routing
+What verification path is required?  
+Trivial docs → cheap single agent. Auth/payment/migrations → specialists + independent review + possible human gate.
+
+**Principle:** use the **minimum agent organization** necessary to complete the task safely. The manager agent proposes; Engram supplies constraints (incidents, ADRs, ownership, policy)—the manager is not king.
+
+---
+
+## Controlled pipeline (vision)
+
+```text
+Engineering Task
+      ↓
+Task Understanding
+      ↓
+Context Routing
+      ↓
+Risk Analysis
+      ↓
+Capability / Agent Routing
+      ↓
+Task Decomposition (Task Graph)
+      ↓
+Agent Execution (constrained)
+      ↓
+Independent Verification (separation of duties)
+      ↓
+Governance Gate  →  Allow / Review / Block
+      ↓
+Outcome + Learning
+```
+
+---
+
+## Status: what exists vs what is next
+
+| Stage | Focus | Status |
+|---|---|---|
+| **V1 — Context Engine** | Neo4j + Qdrant + provenance; sample ingestion; preflight packet | **Implemented (V1 alpha)** |
+| **V1.5 — Context Router** | Task-adaptive context selection + eval harness | **Implemented (V1.5 alpha)** |
+| **V2 — Agent Router** | Small: Manager + Backend + Reviewer; git worktrees | **Implemented (V2 alpha)** |
+| **V2.5 — Risk Router** | Blast-radius → review configuration (rules first) | **Implemented (V2.5 alpha)** |
+| **V3 — Learning Layer** | Outcome telemetry → better routing policies | **Implemented (V3 alpha log + similar-task lookup)** |
+
+### V1–V3 (current build) delivers
+
+- Structured engineering context graph + semantic retrieval  
+- GitHub pull-request ingest (additive; sample org still required for the auth demo)  
+- Evidence / provenance for retrieved claims  
+- Preflight-style context packets for proposed changes  
+- Task-adaptive context routing + eval harness (recall, waste, tokens, citation groundedness)  
+- Thin agent router: Manager proposes, Engram constrains, Backend edits a git worktree, Reviewer is read-only  
+- Deterministic risk router: blast radius → org; ADR cap violations → `block` + human required  
+- Outcome log: each run is recorded; a human can approve/reject without merging; similar resolved outcomes are injected as constraints (lookup, not a trained policy)  
+
+### Not claimed as shipped
+
+- Merge / deploy / push of agent candidates  
+- Human approval inbox / CI governance runtime  
+- Learned routing policies from production outcomes  
+- Full multi-agent “AI office”  
+- Enterprise-wide agent registry at scale
+
+---
+
+## Architecture (V1 substrate)
 
 ```text
 Data Sources → Ingestion → Extraction
         ↓
-   Graph DB (Neo4j)
-        +
-   Vector DB (Qdrant)
+   Graph DB (Neo4j)  +  Vector DB (Qdrant)
         ↓
-   Semantic Layer
+   Semantic / Provenance Layer
         ↓
    Hybrid Query Engine
         ↓
-   Agentic Reasoning (LangGraph)
-        ↓
-   API (FastAPI)
+   Orchestration (LangGraph) → API (FastAPI)
 ```
 
-### Product architecture flow (vision)
+### Product flow (toward vision)
 
 ```mermaid
 flowchart TD
-    A[Engineering Artifacts<br/>PRs, Incidents, ADRs, Docs, Ownership, Workflows] --> B[Ingestion + Extraction]
-    B --> C[Engineering Context Graph<br/>Neo4j]
-    B --> D[Semantic Retrieval Store<br/>Qdrant]
-    B --> E[Semantic Definitions]
-
-    C --> F[Hybrid Retrieval Engine]
-    D --> F
-    E --> F
-
-    F --> G[Evidence + Provenance Layer]
-    G --> H[Risk Analysis]
-    H --> I[Policy Engine<br/>Allow, Warn, Review, Block]
-    I --> J[Agent Orchestration<br/>LangGraph]
-    J --> K[FastAPI Layer<br/>/query, /preflight, /incident-context, /governance-check]
-
-    K --> L[Preflight Packet Mode<br/>Before changes]
-    K --> M[Incident Context Mode<br/>During on-call]
-    K --> N[Context Explorer]
-    K --> O[Governance and Approvals<br/>Policy checks, overrides, audit trails]
+    A[Engineering Task / PR / Issue] --> B[Task Understanding]
+    B --> C[Context Plane]
+    B --> D[Risk Plane]
+    B --> E[Capability Plane]
+    C --> F[Context Graph + Vectors]
+    D --> G[Policy / Blast Radius]
+    E --> H[Agent Registry]
+    F --> I[Task Graph]
+    G --> I
+    H --> I
+    I --> J[Constrained Execution]
+    J --> K[Independent Verification]
+    K --> L[Governance Gate]
+    L --> M[Allow / Review / Block]
+    M --> N[Outcome Telemetry / Learning]
 ```
 
-### Data model
-
-**Entities**
-
-- Service
-- PR (Pull Request)
-- Incident
-- Decision (ADR)
-
-**Relationships**
+### Example entities & relationships (context graph)
 
 ```text
 PR → AFFECTS → Service
-Incident → CAUSED_BY → Service
 Incident → RELATED_TO → PR
-Decision → APPLIES_TO → Service
+ADR → GOVERNS → Service
+Service → DEPENDS_ON → Service
 ```
 
-### Semantic Layer
+---
 
-A semantic layer sits between storage and reasoning to reduce ambiguity and improve consistency.
+## Tech stack
 
-Instead of letting the LLM infer meanings from scattered text, Engram can define canonical meanings for engineering entities.
-
-**Example**
-
-- **Service:** Auth Service  
-  **Definition:**
-  - Handles authentication and session validation
-  - Uses Redis for caching
-  - Owned by Platform Team
-
-This allows the system to reason over defined engineering meaning, not just approximate language patterns.
-
-**Note:** The current implementation uses lightweight semantic definitions for core entities. A dedicated semantic module with richer schema management and validation is planned in future iterations.
-
-### Example Query
-
-**Query**
-
-> What should I know before modifying auth service?
-
-**Response (example)**
-
-- Auth Service is owned by Platform Team
-- Recent incident: Cache inconsistency (INC-45)
-- Related PR: PR-123 (TTL fix)
-- Decision: Redis caching strategy (ADR-12)
+- Python + FastAPI  
+- Neo4j (context graph)  
+- Qdrant (semantic retrieval)  
+- LangGraph (orchestration)  
+- OpenAI / Anthropic (reasoning / agents)  
 
 ---
 
-## Tech Stack
+## Research program (aligned with product)
 
-- Python + FastAPI
-- Neo4j (graph database)
-- Qdrant (vector database)
-- LangGraph (agent orchestration)
-- OpenAI / Anthropic (LLM)
+1. Task-adaptive context routing under fixed token budgets  
+2. Does historical engineering context improve risk-sensitive agent changes?  
+3. Capability-aware routing for heterogeneous SE agents  
+4. Risk-adaptive verification for autonomous software changes  
+5. Learning context and agent selection policies from outcomes  
 
----
-
-## Design Decisions
-
-- Graph over relational DB → better fit for relationship-heavy system context
-- Hybrid retrieval → combines explicit structure with semantic recall
-- Semantic layer → improves consistency and reduces model guessing
-- LLM as reasoning layer → not used as long-term memory
-- Modular monolith → simpler development now, cleaner path to future decomposition
+Dogfood: use Engram while building other products (e.g. Havenly)—Engram stays general infrastructure; the product org is a test tenant, not a feature embed.
 
 ---
 
-## Scope
+## Design decisions
 
-This repository represents the MVP layer of Engram.
-
-### MVP focus
-
-- Controlled data ingestion
-- Explicit entity and relationship modeling
-- Graph + vector retrieval
-- Basic semantic grounding
-- Queryable engineering context through an agentic workflow
-
-### MVP flow
-
-```mermaid
-flowchart TD
-    A[Input Data<br/>PRs, Incidents, ADRs, Services] --> B[Ingestion + Basic Extraction]
-    B --> C[Neo4j Graph]
-    B --> D[Qdrant Vectors]
-    B --> E[Lightweight Semantic Definitions]
-    C --> F[Query Engine]
-    D --> F
-    E --> F
-    F --> G[LangGraph Orchestration]
-    G --> H[FastAPI POST /query]
-    H --> I[Structured Response<br/>Context + Risk + Evidence]
-```
-
-### Not included yet
-
-- Real-time ingestion
-- Multi-source enterprise integrations
-- Advanced UI
-- Production-scale deployment
-- Full plug-and-play automation
+- **Structure before cleverness** — LLMs reason over grounded context; they are not the long-term memory  
+- **Provenance required** for risk claims — no unsupported “safe to merge” theater  
+- **Separation of duties** — implementer ≠ sole verifier  
+- **Minimum agency** — instantiate only as much agent organization as risk justifies  
+- **Eval harness early** — especially for context routing (V1.5)  
+- **Havenly as dogfood**, not as Engram’s product surface (until Havenly has eng history, use BYO GitHub + sample Auth)  
 
 ---
 
-## Use Cases & Positioning
+## Running V1 / V1.5 / V2
 
-Engram is designed for engineering teams to improve system understanding and reduce context fragmentation.
-
-### Primary use cases
-
-- Understanding service dependencies
-- Debugging incidents using historical context
-- Tracing architectural decisions
-- Accelerating onboarding
-- Connecting system changes to operational failures
-
-### Target users
-
-- Software engineers
-- Tech leads
-- SRE teams
-- Platform / infrastructure teams
-
-Engram is not a plug-and-play system in its current form.
-
-It requires structured or semi-structured inputs (PRs, incidents, decisions, docs) to build a reliable knowledge graph. This is intentional: the system prioritizes structured correctness and explainability over full automation in the early phase.
-
-### Plug-and-Play Evolution
-
-Engram is designed with a path toward increasing automation.
-
-**Current state**
-
-- Structured or semi-structured inputs
-- Controlled entity definitions
-- Explicit relationship modeling
-- Manual or predefined ingestion
-
-**Future direction**
-
-Over time, Engram can evolve toward:
-
-- GitHub-native ingestion
-- Document parsing across repositories and ADRs
-- Broader multi-source connectors
-- Reduced setup overhead
-- More automated semantic extraction
-
-The goal is to move from a configurable engineering memory system toward a more seamless context layer, without sacrificing reliability.
-
----
-
-## Future Directions
-
-Engram’s long-term vision goes beyond the MVP.
-
-### Interactive AI interfaces
-
-Engram can act as a context layer for screen-aware or voice-based assistants, enabling real-time context-aware help while engineers work.
-
-### Code-level context integration
-
-Future versions can connect system-level context with code-level dependency graphs to bridge architectural and implementation understanding.
-
-### Adaptive retrieval
-
-The retrieval layer can evolve to improve from weak or incomplete responses over time, enabling more reliable query results.
-
-### Persistent context systems
-
-Engram can support longer-lived memory refinement so engineering context becomes more accurate and useful as systems evolve.
-
-### Domain expansion
-
-Although initially focused on engineering systems, the same architecture can extend to:
-
-- operational workflows
-- support systems
-- healthcare workflows
-- product decision tracking
-
----
-
-## Running the Project (WIP)
+See **[`docs/V1.md`](./docs/V1.md)**, **[`docs/V1.5.md`](./docs/V1.5.md)**, **[`docs/V2.md`](./docs/V2.md)**, **[`docs/V2.5.md`](./docs/V2.5.md)**, and **[`docs/V3.md`](./docs/V3.md)**.
 
 ```bash
+cp .env.example .env
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python main.py seed
+python main.py ingest-github --repo anthropics/claude-cookbooks --limit 100
+python main.py serve
+# other terminal: open http://127.0.0.1:8000/try
+python main.py eval
+python main.py run
+```
+
+Docker is optional. Default `ENGRAM_STORE=local` uses a file-backed graph + embedded Qdrant (no Neo4j container). To use Docker:
+
+```bash
+# .env: ENGRAM_STORE=docker
+docker compose up -d
+python main.py seed
+```
+
+Preflight demo:
+
+```bash
+python main.py preflight \
+  --service "Auth Service" \
+  --task "Increase auth session TTL from 24 hours to 7 days"
+```
+
+API docs: `http://localhost:8000/docs`
+
+Thin V2 agent run (git worktree; nothing merged):
+
+```bash
+python main.py run \
+  --service "Auth Service" \
+  --task "Increase auth session TTL from 24 hours to 7 days"
 ```
 
 ---
 
-## Project Structure
+## Project structure
 
 ```text
 engram/
-├── ingestion/
-├── extraction/
-├── graph/
-├── vector/
-├── query/
-├── agent/
-├── api/
-├── data/
-├── docs/
-└── main.py
+├── api/           FastAPI routes
+├── agents/        Thin V2: Manager / Backend worktree / Reviewer
+├── graph/         Neo4j context graph
+├── vector/        Qdrant + embeddings
+├── ingestion/     Sample seed (GitHub path next)
+├── retrieval/     Hybrid graph + vector retrieval
+├── routing/       V1.5 context router + V2.5 risk router
+├── learning/      V3 outcome log
+├── preflight/     Risk rules + packet assembly
+├── provenance/    Evidence helpers
+├── engine.py      LangGraph preflight + agent run
+├── config.py
+└── models/
+data/sample/       Demo org + sandbox fixtures
+docs/V1.md
+docs/V1.5.md
+docs/V2.md
+docs/V2.5.md
+docs/V3.md
 ```
 
 ---
 
 ## Positioning
 
-Engram is a structured engineering memory layer that models systems as a knowledge graph, enabling AI to reason over relationships between services, decisions, and incidents. It transforms fragmented engineering data into consistent, queryable context for reliable system understanding.
+Coding agents **perform** work.
+
+Engram determines:
+
+- What do they need to know?  
+- Who should perform the task?  
+- What are they allowed to do?  
+- What could go wrong?  
+- Who or what must verify it?  
+- What did the organization learn from the result?  
+
+**Long-term goal:** make increasingly autonomous software engineering possible **without** separating AI execution from organizational context, technical history, provenance, and human governance.
+
+---
+
+## Docs
+
+| Doc | Role |
+|---|---|
+| [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Resume/recruiter hosted Try deploy (tight public scope) |
+| [`website/before-you-build.md`](./website/before-you-build.md) | Canonical strategic direction (2026) |
+| [`product-vision.md`](./product-vision.md) | Product vision (aligned; see update banner) |
+| [`website/`](./website/) | Marketing site + local try UI (`try.html`) |
