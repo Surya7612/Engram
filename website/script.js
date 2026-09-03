@@ -274,6 +274,24 @@ if (heroRight && heroTiltCard && heroRiskCard && !prefersReducedMotion) {
   });
 }
 
+const stickyCta = document.querySelector("#stickyCta");
+const heroSection = document.querySelector(".hero");
+if (stickyCta && heroSection) {
+  const updateStickyCta = () => {
+    const pastHero = window.scrollY > heroSection.offsetTop + heroSection.offsetHeight * 0.55;
+    if (pastHero) {
+      stickyCta.hidden = false;
+      requestAnimationFrame(() => stickyCta.classList.add("is-visible"));
+    } else {
+      stickyCta.classList.remove("is-visible");
+      stickyCta.hidden = true;
+    }
+  };
+  updateStickyCta();
+  window.addEventListener("scroll", updateStickyCta, { passive: true });
+  window.addEventListener("resize", updateStickyCta);
+}
+
 // Deterrent only: browser devtools cannot be truly disabled.
 window.addEventListener("contextmenu", (event) => {
   event.preventDefault();

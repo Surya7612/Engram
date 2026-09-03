@@ -243,10 +243,6 @@ a:hover {
   filter: brightness(1.1);
 }
 
-.nav-actions .nav-try-btn {
-  text-decoration: none;
-}
-
 .btn {
   border-radius: 999px;
   border: 1px solid transparent;
@@ -324,6 +320,20 @@ body[data-theme="light"] .theme-dot {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 10px 20px rgba(2, 6, 18, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sticky-cta.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.sticky-cta[hidden] {
+  display: none !important;
 }
 
 .sticky-cta p {
