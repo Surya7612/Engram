@@ -117,7 +117,7 @@ def meta() -> dict:
         "store": settings.store,
         "capabilities": _capabilities(settings),
         "scope": (
-            "Hosted try: public GitHub ingest (capped), query, preflight, sample Auth risk loop. "
+            "Public try: public GitHub ingest (capped), query, preflight, sample Auth risk loop. "
             "No BYO clone/run, no merge/push, not multi-tenant SaaS."
             if settings.public_mode
             else "Local/dev mode: full CLI surfaces including clone worktrees."
@@ -127,17 +127,19 @@ def meta() -> dict:
 
 @app.post("/ingest/sample")
 def ingest_sample() -> dict:
-    return seed_from_sample(get_settings())
+    eng = _get_engine()
+    return seed_from_sample(get_settings(), graph=eng.graph, vectors=eng.vectors)
 
 
 @app.post("/ingest/github")
 def ingest_github_repo(request: GitHubIngestRequest) -> dict:
     settings = get_settings()
+    eng = _get_engine()
     limit = request.limit
     token = request.token
     if settings.public_mode:
         limit = min(limit, settings.public_ingest_limit)
-        # Recruiters use public repos; do not accept browser-supplied PATs on the shared demo.
+        # Public try uses public repos; do not accept browser-supplied PATs on the shared demo.
         token = None
     try:
         return ingest_github(
@@ -146,11 +148,15 @@ def ingest_github_repo(request: GitHubIngestRequest) -> dict:
             service=request.service,
             limit=limit,
             token=token,
+            graph=eng.graph,
+            vectors=eng.vectors,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"GitHub ingest failed: {exc}") from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 @app.post("/preflight", response_model=PreflightPacket)

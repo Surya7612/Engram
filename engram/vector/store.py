@@ -61,6 +61,10 @@ class VectorStore:
         else:
             self._client = QdrantClient(url=settings.qdrant_url, check_compatibility=False)
 
+    @property
+    def uses_openai(self) -> bool:
+        return self._embedder.uses_openai
+
     def ping(self) -> bool:
         try:
             self._client.get_collections()

@@ -42,3 +42,61 @@ def test_public_mode_meta_and_guards(tmp_path, monkeypatch):
         assert denied_eval.status_code == 403
 
     get_settings.cache_clear()
+
+
+def test_ingest_github_reuses_engine_qdrant(tmp_path, monkeypatch):
+    """Regression: opening a second local Qdrant client during ingest used to 500."""
+    settings = Settings(
+        store="local",
+        local_data_dir=tmp_path,
+        public_mode=True,
+        seed_on_boot=True,
+        openai_api_key="",
+        langchain_tracing_v2=False,
+        langchain_api_key="",
+        github_token="",
+    )
+    get_settings.cache_clear()
+
+    import engram.api.app as app_module
+
+    monkeypatch.setattr(app_module, "get_settings", lambda: settings)
+
+    pulls = [
+        {
+            "number": 3,
+            "title": "Wire context router",
+            "state": "closed",
+            "body": "V1.5",
+        }
+    ]
+
+    def fake_ingest(settings_arg, **kwargs):
+        assert kwargs.get("graph") is not None
+        assert kwargs.get("vectors") is not None
+        from engram.ingestion.github import ingest_github as real_ingest
+
+        return real_ingest(
+            settings_arg,
+            repo=kwargs["repo"],
+            service=kwargs.get("service"),
+            limit=kwargs.get("limit", 30),
+            token=kwargs.get("token"),
+            pulls=pulls,
+            graph=kwargs["graph"],
+            vectors=kwargs["vectors"],
+        )
+
+    monkeypatch.setattr(app_module, "ingest_github", fake_ingest)
+
+    with TestClient(app_module.app) as client:
+        response = client.post(
+            "/ingest/github",
+            json={"repo": "acme/demo", "limit": 10},
+        )
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["pull_requests"] == 1
+        assert body["service"]
+
+    get_settings.cache_clear()

@@ -152,7 +152,7 @@ function explainFetchError(err, base) {
   if (/failed to fetch|networkerror|load failed/i.test(msg)) {
     return [
       `Cannot reach API at ${base}.`,
-      "Resume demo: open the deployed API host /try (same origin), or set website/config.js apiBase.",
+      "Open the deployed API host /try (same origin), or set website/config.js apiBase.",
       "Local builder: source .venv/bin/activate && python main.py serve → http://127.0.0.1:8000/try",
       "See docs/HOSTED_TRY.md",
     ].join("\n");

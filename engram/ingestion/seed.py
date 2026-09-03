@@ -10,10 +10,12 @@ def load_sample_org(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def seed_from_sample(settings: Settings) -> dict:
-    graph = open_graph_store(settings)
-    embedder = EmbeddingClient(settings)
-    vectors = VectorStore(settings, embedder)
+def seed_from_sample(settings: Settings, graph=None, vectors: VectorStore | None = None) -> dict:
+    # Local Qdrant allows one open client per path — reuse the engine stores when provided.
+    owns_stores = graph is None or vectors is None
+    if owns_stores:
+        graph = open_graph_store(settings)
+        vectors = VectorStore(settings, EmbeddingClient(settings))
 
     org_path = settings.data_dir / "org.json"
     org = load_sample_org(org_path)
@@ -78,8 +80,9 @@ def seed_from_sample(settings: Settings) -> dict:
                 },
             )
     finally:
-        graph.close()
-        vectors.close()
+        if owns_stores:
+            graph.close()
+            vectors.close()
 
     return {
         "organization": org.get("organization"),
@@ -87,6 +90,6 @@ def seed_from_sample(settings: Settings) -> dict:
         "pull_requests": len(org["pull_requests"]),
         "incidents": len(org["incidents"]),
         "adrs": len(org["adrs"]),
-        "embedding_backend": "openai" if embedder.uses_openai else "local-hash",
+        "embedding_backend": "openai" if vectors.uses_openai else "local-hash",
         "store": settings.store,
     }

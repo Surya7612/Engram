@@ -125,6 +125,8 @@ def ingest_github(
     token: str | None = None,
     pulls: list[dict] | None = None,
     commits: list[dict] | None = None,
+    graph=None,
+    vectors: VectorStore | None = None,
 ) -> dict:
     owner, name = parse_repo(repo)
     limit = max(1, min(int(limit), MAX_INGEST_LIMIT))
@@ -149,9 +151,11 @@ def ingest_github(
     commit_artifacts = commits_to_artifacts(owner, name, service_id, raw_commits)
     artifacts = pr_artifacts + commit_artifacts
 
-    graph = open_graph_store(settings)
-    embedder = EmbeddingClient(settings)
-    vectors = VectorStore(settings, embedder)
+    # Local Qdrant allows one open client per path — reuse the engine stores when provided.
+    owns_stores = graph is None or vectors is None
+    if owns_stores:
+        graph = open_graph_store(settings)
+        vectors = VectorStore(settings, EmbeddingClient(settings))
     try:
         graph.init_schema()
         vectors.ensure_collection()
@@ -209,8 +213,9 @@ def ingest_github(
                 },
             )
     finally:
-        graph.close()
-        vectors.close()
+        if owns_stores:
+            graph.close()
+            vectors.close()
 
     note = None
     if not pr_artifacts and commit_artifacts:
@@ -226,7 +231,7 @@ def ingest_github(
         "commits": len(commit_artifacts),
         "limit": limit,
         "store": settings.store,
-        "embedding_backend": "openai" if embedder.uses_openai else "local-hash",
+        "embedding_backend": "openai" if vectors.uses_openai else "local-hash",
         "cleared": False,
         "note": note,
     }
