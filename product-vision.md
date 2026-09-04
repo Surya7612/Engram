@@ -3,8 +3,8 @@
 ### Engineering Context, Routing & Safety Layer for AI-assisted software engineering
 
 > **2026 direction update:** The center of gravity moved from “structured engineering memory / RAG” to a **context → routing → controlled execution → verification → governance → learning** control plane.  
-> Canonical write-up: [`website/before-you-build.md`](./website/before-you-build.md) · Summary: [`README.md`](./README.md) · Live Try: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)  
-> Sections below retain useful problem framing and MVP discipline; treat **merge automation / learned policies / full AI office** as vision unless marked implemented (V1–V3 alpha).
+> Canonical write-up: [`website/product-direction.md`](./website/product-direction.md) · Summary: [`README.md`](./README.md) · Live Try: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)  
+> Sections below retain problem framing and MVP discipline. Treat **merge automation / learned policies / full AI office** as vision unless marked implemented (V1–V3 alpha).
 
 ---
 
@@ -99,7 +99,7 @@ Durable advantage comes from:
 
 The LLM is a **reasoning and execution layer**, not the system’s long-term memory or sole risk authority.
 
-This document outlines product vision, positioning, users, use cases, MVP boundaries, and long-term evolution. Where it conflicts with §0 or `website/before-you-build.md`, **§0 and that file win**.
+This document outlines product vision, positioning, users, use cases, MVP boundaries, and long-term evolution. Where it conflicts with §0 or `website/product-direction.md`, **§0 and that file win**.
 
 ---
 
@@ -284,27 +284,27 @@ Execution and evidence matter more than architecture slides.
 
 ## 10. Evolution roadmap
 
-Aligned with `website/before-you-build.md` §9:
+Aligned with [`website/product-direction.md`](./website/product-direction.md):
 
-1. **V1 Context Engine** — finish graph + vectors + provenance + real repo queries + preflight  
+1. **V1 Context Engine** — graph + vectors + provenance + real repo queries + preflight  
 2. **V1.5 Context Router** — adaptive retrieval + evals vs static RAG / huge-context baselines  
 3. **V2 Agent Router** — Manager + Backend + Reviewer only; sandboxed worktrees  
 4. **V2.5 Risk Router** — rule-based blast radius → review configuration  
 5. **V3 Learning** — outcome telemetry → routing policy improvement  
 
-Research papers track this sequence (token-budget context routing first).
+Research themes track this sequence (token-budget context routing first).
 
 ---
 
 ## 11. Non-goals (near term)
 
-* Building fifteen fake agent personas before context routing works  
-* ML-ifying risk routing before deterministic rules prove useful  
+* Expanding to a large agent persona catalog before context routing works  
+* Replacing deterministic risk rules with ML before rules prove useful  
 * Embedding Engram as a customer feature of another product instead of dogfooding it as infrastructure  
 * Marketing the full AI office as if it were already shipped  
 
 ---
 
-## 12. Legacy notes
+## 12. Document history
 
-Earlier drafts of this document emphasized “structured engineering memory layer” as the end product. That framing remains **~60% correct** as the **foundation**. The product story is now the **control plane** on top of that foundation. Prefer §0, README, and `website/before-you-build.md` when writing external copy or investor narrative.
+Earlier drafts framed Engram primarily as a structured engineering memory layer. That remains the **foundation**. The product story is the **control plane** on top of that foundation. Prefer §0, README, and `website/product-direction.md` for external copy.

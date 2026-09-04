@@ -2,7 +2,7 @@
 
 ### Context-aware control plane for AI-assisted software engineering
 
-> **Canonical direction:** [`website/before-you-build.md`](./website/before-you-build.md)  
+> **Canonical direction:** [`website/product-direction.md`](./website/product-direction.md)  
 > This README distinguishes **implemented (alpha) / building / vision**. Do not treat the full control-plane story as production SaaS.
 
 ### Live demo
@@ -336,7 +336,7 @@ Engram determines:
 |---|---|
 | [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Hosted Try deploy, public scope, demo script |
 | [`docs/V1.md`](./docs/V1.md) … [`docs/V3.md`](./docs/V3.md) | Versioned build notes |
-| [`website/before-you-build.md`](./website/before-you-build.md) | Canonical strategic direction (2026) |
+| [`website/product-direction.md`](./website/product-direction.md) | Canonical product strategy (2026) |
 | [`product-vision.md`](./product-vision.md) | Product vision (aligned; see update banner) |
 | [`AGENTS.md`](./AGENTS.md) | Non-negotiables for contributors / coding agents |
 | [`website/`](./website/) | Marketing site + Try UI |

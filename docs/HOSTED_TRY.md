@@ -5,7 +5,7 @@ Public demo of Engram’s context → risk → governance loop. **Not** multi-te
 ## Live URL
 
 - **Try:** [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)
-- Prefer `/try` (redirects to the Try UI). Avoid bookmarking `/site/try.html` alone if cold-start messaging confuses you—`/try` is the canonical entry.
+- Prefer `/try` (redirects to the Try UI). Canonical entry is `/try`, not a direct `/site/try.html` bookmark.
 
 ## Demo script (2–3 minutes)
 
@@ -45,7 +45,7 @@ Keep `website/` on Vercel. CTAs should open the Render Try URL.
 
 `website/config.js` sets `apiBase` to the Render host so a static Try page can still call the API (CORS must allow the Vercel origin).
 
-## Local builder mode
+## Local development
 
 ```bash
 ENGRAM_PUBLIC_MODE=false python main.py serve

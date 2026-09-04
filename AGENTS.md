@@ -2,7 +2,7 @@
 
 ## Canonical direction
 
-Read **`website/before-you-build.md`** before proposing architecture, scope, or marketing claims.
+Read **`website/product-direction.md`** before proposing architecture, scope, or marketing claims.
 
 Summaries:
 
