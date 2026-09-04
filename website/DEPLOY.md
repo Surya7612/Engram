@@ -13,7 +13,7 @@ This guide covers end-to-end deployment for both Vercel and Netlify.
    - dark/light mode works
    - hero interactions work
    - request access modal + form submit works
-3. Ensure email intake is active on `formsubmit.co` for `nsurya@havenlyai.com`.
+3. Ensure email intake is active on [formsubmit.co](https://formsubmit.co) for the inbox configured in `index.html`.
 
 ---
 

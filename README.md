@@ -227,7 +227,7 @@ Service → DEPENDS_ON → Service
 4. Risk-adaptive verification for autonomous software changes  
 5. Learning context and agent selection policies from outcomes  
 
-Dogfood: use Engram while building other products (e.g. Havenly)—Engram stays general infrastructure; the product org is a test tenant, not a feature embed.
+Dogfood: use Engram while building other products—Engram stays general infrastructure; a product org is a test tenant, not a feature embed.
 
 ---
 
@@ -238,7 +238,7 @@ Dogfood: use Engram while building other products (e.g. Havenly)—Engram stays 
 - **Separation of duties** — implementer ≠ sole verifier  
 - **Minimum agency** — instantiate only as much agent organization as risk justifies  
 - **Eval harness early** — especially for context routing (V1.5)  
-- **Havenly as dogfood**, not as Engram’s product surface (until Havenly has eng history, use BYO GitHub + sample Auth)  
+- **Dogfood tenant** — use Engram while building other products; do not embed Engram as those products’ customer-facing feature surface until they have real eng history (until then: BYO GitHub + sample Auth)  
 
 ---
 

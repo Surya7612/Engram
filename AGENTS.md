@@ -32,7 +32,7 @@ intent → task-specific context → risk-aware routing
 4. **Minimum agency** — instantiate only the agent organization risk justifies.
 5. **Provenance** — no unsupported “safe to merge” / root-cause claims.
 6. **Honest status** — distinguish alpha-implemented / building / vision. V1–V3 alpha exists; merge automation, learned policies, and multi-tenant SaaS do not.
-7. **Havenly = dogfood tenant**, not Engram’s product surface.
+7. **Dogfood tenants only** — companion product orgs are test tenants, not Engram’s product surface.
 8. **Public Try is tight** — no BYO clone/run, no browser PATs, no eval on the shared host.
 
 ## Build sequence

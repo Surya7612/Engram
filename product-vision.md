@@ -66,7 +66,7 @@ Not: multi-agent orchestration alone · knowledge graphs alone · vector retriev
 | **V2.5** | Risk Router (deterministic rules first) |
 | **V3** | Learning Layer from outcomes |
 
-Havenly (or any first product org) is a **dogfood tenant**, not Engram’s customer-facing feature.
+A first product organization is a **dogfood tenant**, not Engram’s customer-facing feature.
 
 ### Research track (overlap with product)
 

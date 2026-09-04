@@ -291,21 +291,3 @@ if (stickyCta && heroSection) {
   window.addEventListener("scroll", updateStickyCta, { passive: true });
   window.addEventListener("resize", updateStickyCta);
 }
-
-// Deterrent only: browser devtools cannot be truly disabled.
-window.addEventListener("contextmenu", (event) => {
-  event.preventDefault();
-});
-
-window.addEventListener("keydown", (event) => {
-  const key = event.key.toLowerCase();
-  const blocked =
-    key === "f12" ||
-    (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(key)) ||
-    (event.metaKey && event.altKey && ["i", "j", "c"].includes(key)) ||
-    (event.ctrlKey && key === "u") ||
-    (event.metaKey && key === "u");
-  if (blocked) {
-    event.preventDefault();
-  }
-});

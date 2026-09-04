@@ -13,4 +13,11 @@ __pycache__/
 .engram/
 .cursor/
 .DS_Store
+**/.DS_Store
 Paper to Production/
+# Local-only design assets (site uses website/assets/)
+website/dark-engram.svg
+website/engram logo dark.svg
+website/engram-logo.png
+website/engram-logo-nobg.png
+website/light-nobg-engram.png
