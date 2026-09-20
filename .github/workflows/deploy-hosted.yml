@@ -1,0 +1,38 @@
+# Optional: set repo secret RENDER_DEPLOY_HOOK to a Render "Deploy Hook" URL
+# (Dashboard → service → Settings → Deploy Hook) so pushes can force a rebuild.
+name: Deploy hosted Try
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "render.yaml"
+      - "requirements.txt"
+      - "engram/**"
+      - "data/**"
+      - "website/**"
+      - "main.py"
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK secret not set — skip."
+            echo "Dashboard → engram-api → Manual Deploy to pick up cold-start fixes."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/deploy-hook.out -w "%{http_code}" -X POST "$HOOK")
+          echo "hook_http=$code"
+          head -c 400 /tmp/deploy-hook.out || true
+          echo
+          case "$code" in
+            200|201|202) exit 0 ;;
+            *) exit 1 ;;
+          esac

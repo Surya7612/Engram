@@ -43,6 +43,14 @@ Env:
 3. Set the env vars above.  
 4. Open `https://<service>.onrender.com/try`.
 
+If the service sticks on Render’s “Application loading” page after a push, open the
+Render dashboard → **Manual Deploy** → **Deploy latest commit**. Auto-deploy alone
+is not enough when a prior boot hung on seed/embeddings (free tier will keep the
+old unhealthy instance until a new deploy lands).
+
+Optional: add a Render **Deploy Hook** URL as GitHub secret `RENDER_DEPLOY_HOOK`
+so `.github/workflows/deploy-hosted.yml` can trigger rebuilds on API changes.
+
 Free-tier cold starts can take ~1 minute while Render allocates a machine. The API
 binds before demo seeding finishes (`GET /live`, `GET /meta` include `seeded`).
 A GitHub Action pings `/live` every 10 minutes to reduce spin-downs. Use **Check API**
