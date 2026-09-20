@@ -49,6 +49,7 @@ class HybridRetriever:
 
         paths = self._graph.relationship_paths(service["id"]) if policy.include_graph else []
         evidence = self._merge_evidence(neighborhood, vector_hits, paths, policy)
+        evidence = self._apply_token_budget(evidence, policy)
 
         return {
             "service": service,
@@ -59,6 +60,18 @@ class HybridRetriever:
             "policy": policy.as_dict(),
             "token_estimate": estimate_tokens(evidence),
         }
+
+    def _apply_token_budget(self, evidence: list[Evidence], policy: ContextPolicy) -> list[Evidence]:
+        budget = policy.token_budget
+        if budget is None or budget <= 0 or not evidence:
+            return evidence
+        kept: list[Evidence] = []
+        for item in evidence:
+            trial = kept + [item]
+            if estimate_tokens(trial) > budget and kept:
+                break
+            kept.append(item)
+        return kept
 
     def _filter_neighborhood(self, neighborhood: dict, policy: ContextPolicy) -> dict:
         filtered = dict(neighborhood)
@@ -119,6 +132,7 @@ class HybridRetriever:
                     artifact_id=service["id"],
                     label=service["name"],
                     snippet=service.get("description", ""),
+                    source_uri=service.get("github_repo") or f"graph://service/{service['id']}",
                     relationship_path=[service["name"]],
                 )
             )
@@ -133,6 +147,7 @@ class HybridRetriever:
                         artifact_id=inc["id"],
                         label=f"INC-{inc['number']}",
                         snippet=inc.get("summary") or inc.get("title", ""),
+                        source_uri=f"graph://incident/{inc['id']}",
                         relationship_path=[service.get("name", ""), f"INC-{inc['number']}"],
                     )
                 )
@@ -148,6 +163,7 @@ class HybridRetriever:
                         artifact_id=pr["id"],
                         label=label,
                         snippet=pr.get("summary") or pr.get("title", ""),
+                        source_uri=pr.get("url") or f"graph://pr/{pr['id']}",
                         relationship_path=[service.get("name", ""), label],
                     )
                 )
@@ -162,6 +178,7 @@ class HybridRetriever:
                         artifact_id=adr["id"],
                         label=f"ADR-{adr['number']}",
                         snippet=(adr.get("content") or adr.get("title", ""))[:280],
+                        source_uri=f"graph://adr/{adr['id']}",
                         relationship_path=[service.get("name", ""), f"ADR-{adr['number']}"],
                     )
                 )
@@ -183,6 +200,7 @@ class HybridRetriever:
                         artifact_id=artifact_id,
                         label=payload.get("label", artifact_id),
                         snippet=(payload.get("text") or "")[:280],
+                        source_uri=payload.get("source_uri") or f"vector://{artifact_id}",
                         relationship_path=paths[0] if paths else [payload.get("label", artifact_id)],
                     )
                 )

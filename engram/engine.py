@@ -99,10 +99,23 @@ class EngramEngine:
 
     def _infer_service(self, question: str) -> str | None:
         q = question.lower()
+        if any(
+            marker in q
+            for marker in (
+                "payment-worker",
+                "payments",
+                "settlement",
+                "/settlements",
+                "timeoutexception",
+            )
+        ):
+            return "Payments Service"
         if "auth" in q or "session" in q or "token" in q:
             return "Auth Service"
         if "redis" in q or "cache" in q:
             return "Redis Cache"
+        if "email" in q:
+            return "Email Service"
         return None
 
     def _build_preflight_graph(self):

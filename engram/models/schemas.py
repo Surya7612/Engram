@@ -88,6 +88,33 @@ class QueryResponse(BaseModel):
     retrieval: dict[str, Any] = Field(default_factory=dict)
 
 
+class SituationRequest(BaseModel):
+    screen_text: str = Field(..., description="Ephemeral OCR/paste of the visible ops UI")
+    question: str = Field(
+        default="What's happening here?",
+        description="On-call question about the visible situation",
+    )
+    service: str | None = Field(
+        default=None,
+        description="Optional service name/id hint if already known",
+    )
+    mode: str = Field(default="adaptive", description="Context retrieval mode")
+    top_k: int = Field(default=8, ge=1, le=20)
+
+
+class SituationResponse(BaseModel):
+    service: str
+    question: str
+    entities: list[dict[str, Any]] = Field(default_factory=list)
+    answer: str
+    evidence: list[Evidence] = Field(default_factory=list)
+    retrieval: dict[str, Any] = Field(default_factory=dict)
+    ephemeral: bool = True
+    note: str = (
+        "Screen text was used as ephemeral query context only and was not stored as Engram memory."
+    )
+
+
 class HealthResponse(BaseModel):
     status: str
     neo4j: bool

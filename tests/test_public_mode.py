@@ -26,6 +26,7 @@ def test_public_mode_meta_and_guards(tmp_path, monkeypatch):
         assert meta["capabilities"]["clone_run"] is False
         assert meta["capabilities"]["eval"] is False
         assert meta["capabilities"]["sample_risk_run"] is True
+        assert meta["capabilities"]["situation"] is True
         assert meta["capabilities"]["accept_client_github_token"] is False
 
         denied_clone = client.post(

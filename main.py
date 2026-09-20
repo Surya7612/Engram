@@ -4,6 +4,7 @@
 import argparse
 import json
 import sys
+from pathlib import Path
 
 import uvicorn
 
@@ -15,7 +16,8 @@ from engram.eval.summary import format_eval
 from engram.ingestion.github import ingest_github
 from engram.ingestion.seed import seed_from_sample
 from engram.learning.store import OutcomeStore
-from engram.models.schemas import AgentRunRequest, PreflightRequest, QueryRequest
+from engram.models.schemas import AgentRunRequest, PreflightRequest, QueryRequest, SituationRequest
+from engram.situation.resolve import explain_situation, load_situation_fixture
 
 
 def cmd_seed(_: argparse.Namespace) -> int:
@@ -71,6 +73,36 @@ def cmd_query(args: argparse.Namespace) -> int:
     try:
         response = eng.query(QueryRequest(question=args.question, service=args.service))
         print(response.model_dump_json(indent=2))
+    finally:
+        eng.close()
+    return 0
+
+
+def cmd_situation(args: argparse.Namespace) -> int:
+    settings = get_settings()
+    if args.fixture:
+        try:
+            screen_text = load_situation_fixture(settings, args.fixture)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+    elif args.screen_file:
+        screen_text = Path(args.screen_file).read_text(encoding="utf-8")
+    else:
+        print("pass --fixture payment-worker or --screen-file PATH", file=sys.stderr)
+        return 1
+    eng = EngramEngine(settings)
+    try:
+        result = explain_situation(
+            eng,
+            SituationRequest(
+                screen_text=screen_text,
+                question=args.question,
+                service=args.service,
+                mode=args.mode,
+            ),
+        )
+        print(result.model_dump_json(indent=2))
     finally:
         eng.close()
     return 0
@@ -187,6 +219,25 @@ def main() -> int:
     p_query.add_argument("--question", required=True)
     p_query.add_argument("--service", default=None)
     p_query.set_defaults(func=cmd_query)
+
+    p_situation = sub.add_parser(
+        "situation",
+        help="Ephemeral on-call screen text → grounded answer (not stored)",
+    )
+    p_situation.add_argument(
+        "--fixture",
+        default=None,
+        help="Built-in fixture name (e.g. payment-worker)",
+    )
+    p_situation.add_argument("--screen-file", default=None, help="Path to pasted/OCR screen text")
+    p_situation.add_argument("--question", default="What's happening here?")
+    p_situation.add_argument("--service", default=None)
+    p_situation.add_argument(
+        "--mode",
+        default="adaptive",
+        choices=["adaptive", "hybrid", "vector", "graph", "huge"],
+    )
+    p_situation.set_defaults(func=cmd_situation)
 
     p_eval = sub.add_parser("eval", help="Run V1.5 retrieval eval harness")
     p_eval.add_argument("--json", action="store_true", help="Print the full eval JSON")

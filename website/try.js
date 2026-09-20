@@ -226,8 +226,38 @@ function watchGuide() {
   sections.forEach((section) => observer.observe(section));
 }
 
+function formatSituation(data) {
+  const entities = (data.entities || [])
+    .map((e) => `<li><code>${escapeHtml(e.kind)}</code> ${escapeHtml(e.value)}</li>`)
+    .join("");
+  return `
+    <p class="try-kicker">service <strong>${escapeHtml(data.service || "")}</strong> · ephemeral</p>
+    <div class="try-answer">${escapeHtml(data.answer || "").replace(/\n/g, "<br>")}</div>
+    ${entities ? `<h3>Entities</h3><ul class="try-bullets">${entities}</ul>` : ""}
+    <h3>Evidence</h3>
+    ${formatEvidence(data.evidence)}
+    <p class="try-muted">${escapeHtml(data.note || "Screen text is not stored.")}</p>
+  `;
+}
+
+const PAYMENT_WORKER_FIXTURE = `Datadog APM · Production · payment-worker
+Service: payment-worker
+Endpoint: POST /settlements
+Error: TimeoutException
+P95 latency ↑ 2.4s (baseline 180ms)
+Related: settlement-api degraded dependency signal
+Last deploy correlated with retry policy change
+Alert: settlements timeout storm
+On-call: Fintech Team`;
+
+function loadSituationFixture() {
+  const el = $("situationText");
+  if (el) el.value = PAYMENT_WORKER_FIXTURE;
+}
+
 async function boot() {
   $("apiBase").value = defaultApiBase();
+  loadSituationFixture();
   try {
     const meta = await api("/meta");
     applyCapabilities(meta.capabilities || {});
@@ -379,6 +409,37 @@ async function resolveDecision(decision) {
 
 $("rejectBtn").addEventListener("click", () => resolveDecision("rejected"));
 $("approveBtn").addEventListener("click", () => resolveDecision("approved"));
+
+if ($("situationFixtureBtn")) {
+  $("situationFixtureBtn").addEventListener("click", () => {
+    loadSituationFixture();
+    showText($("situationOut"), "Loaded payment-worker Datadog fixture.");
+  });
+}
+
+if ($("situationAskBtn")) {
+  $("situationAskBtn").addEventListener("click", async () => {
+    const screenText = ($("situationText").value || "").trim();
+    if (!screenText) {
+      showText($("situationOut"), "Paste screen text or load the payment-worker fixture.");
+      return;
+    }
+    try {
+      showText($("situationOut"), "Resolving situation…");
+      const result = await api("/situation", {
+        method: "POST",
+        body: JSON.stringify({
+          screen_text: screenText,
+          question: ($("situationQuestion").value || "").trim() || "What's happening here?",
+          mode: "adaptive",
+        }),
+      });
+      showHtml($("situationOut"), formatSituation(result));
+    } catch (err) {
+      showText($("situationOut"), String(err.message || err));
+    }
+  });
+}
 
 if ($("cloneRunBtn")) {
   $("cloneRunBtn").addEventListener("click", async () => {

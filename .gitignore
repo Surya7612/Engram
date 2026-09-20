@@ -15,6 +15,15 @@ __pycache__/
 .DS_Store
 **/.DS_Store
 Paper to Production/
+companion/macos/.build/
+companion/macos/dist/
+# Startup / company research stays local (not recruiter-facing)
+docs/Foregraph*
+docs/FOREGRAPH*
+docs/TodaySponsor*
+docs/Startup_*
+docs/*.pdf
+*.pdf
 # Local-only design assets (site uses website/assets/)
 website/dark-engram.svg
 website/engram logo dark.svg

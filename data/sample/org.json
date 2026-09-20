@@ -48,7 +48,14 @@
       "name": "Payments Service",
       "owner": "Fintech Team",
       "criticality": "high",
-      "description": "Invoice rendering, PDF cache, and payment confirmation emails."
+      "description": "Invoice rendering, PDF cache, payment confirmation emails, and the payment-worker that handles POST /settlements settlement timeouts and retries."
+    },
+    {
+      "id": "svc-settlement-api",
+      "name": "Settlement API",
+      "owner": "Fintech Team",
+      "criticality": "high",
+      "description": "Downstream settlement-api called by payment-worker for POST /settlements."
     }
   ],
   "dependencies": [
@@ -57,7 +64,8 @@
     { "from": "svc-auth", "to": "svc-redis" },
     { "from": "svc-auth", "to": "svc-user" },
     { "from": "svc-auth", "to": "svc-email" },
-    { "from": "svc-payments", "to": "svc-email" }
+    { "from": "svc-payments", "to": "svc-email" },
+    { "from": "svc-payments", "to": "svc-settlement-api" }
   ],
   "pull_requests": [
     {
@@ -107,6 +115,14 @@
       "status": "open",
       "summary": "Raises invoice PDF cache TTL from 1 hour to 24 hours in Payments Service.",
       "service_ids": ["svc-payments"]
+    },
+    {
+      "id": "pr-8831",
+      "number": 8831,
+      "title": "Reduce payment-worker settlement retries",
+      "status": "merged",
+      "summary": "Changed payment-worker retry policy for POST /settlements from 3 attempts to 1. Correlated with elevated TimeoutException and P95 latency on settlement-api.",
+      "service_ids": ["svc-payments", "svc-settlement-api"]
     }
   ],
   "incidents": [
@@ -182,6 +198,15 @@
       "status": "resolved",
       "summary": "Payments PDF cache TTL did not match invoice regeneration, serving stale bills. Unrelated to authentication.",
       "service_ids": ["svc-payments"]
+    },
+    {
+      "id": "inc-1842",
+      "number": 1842,
+      "title": "payment-worker settlements TimeoutException",
+      "status": "resolved",
+      "summary": "payment-worker P95 latency spike with TimeoutException on POST /settlements. Introduced after PR #8831 reduced retries from 3 to 1. Mitigated by verifying settlement-api health then restarting payment-worker after confirming no poisoned queue depth. Runbook section 4.2.",
+      "service_ids": ["svc-payments", "svc-settlement-api"],
+      "related_pr_ids": ["pr-8831"]
     }
   ],
   "adrs": [
@@ -216,6 +241,14 @@
       "status": "accepted",
       "content": "Payments invoice PDFs may cache at most 24 hours. Do not reuse Auth Service lifetime rules.",
       "service_ids": ["svc-payments"]
+    },
+    {
+      "id": "adr-62",
+      "number": 62,
+      "title": "payment-worker settlements on-call runbook",
+      "status": "accepted",
+      "content": "Runbook 4.2 for payment-worker POST /settlements timeouts: (1) confirm settlement-api is not degraded, (2) check queue depth and poison messages, (3) restore retries only with Fintech owner approval, (4) restart payment-worker after verifying no write amplification. Owned by Fintech Team.",
+      "service_ids": ["svc-payments", "svc-settlement-api"]
     }
   ]
 }

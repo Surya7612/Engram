@@ -7,8 +7,10 @@
 
 ### Live demo
 
+- **Script (locked):** [`docs/DEMO.md`](./docs/DEMO.md)
 - **Try (hosted API):** [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try) — prefer `/try`, not `/site/try.html`
-- **Script:** public GitHub ingest → query / preflight → sample Auth run → reject → run again (prior)
+- **Flow:** public GitHub ingest → query / preflight → on-call situation → sample Auth run → reject → run again (prior)
+- **On-call:** browser [Try → On-call](https://engram-cjph.onrender.com/try#oncall) or [Mac companion DMG](https://github.com/Surya7612/Engram/releases) — [`docs/ONCALL_COMPANION.md`](./docs/ONCALL_COMPANION.md)
 - **Scope:** public demo only — no BYO clone/run, no merge/push, not multi-tenant SaaS  
   Details: [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md)
 
@@ -152,6 +154,8 @@ Outcome + Learning
 - Thin agent router: Manager proposes, Engram constrains, Backend edits a git worktree, Reviewer is read-only  
 - Deterministic risk router: blast radius → org; ADR cap violations → `block` + human required  
 - Outcome log: each run is recorded; a human can approve/reject without merging; similar resolved outcomes are injected as constraints (lookup, not a trained policy)  
+- On-call situation explain: ephemeral screen/OCR text → service resolve → grounded answer (`POST /situation`; Mac companion + `/try` on-call)  
+- Dual model path: local-hash embeddings / template answers without `OPENAI_API_KEY`; stronger synthesis when a key is set  
 
 ### Not claimed as shipped
 
@@ -159,7 +163,9 @@ Outcome + Learning
 - Human approval inbox / CI governance runtime  
 - Learned routing policies from production outcomes  
 - Full multi-agent “AI office”  
-- Enterprise-wide agent registry at scale
+- Enterprise-wide agent registry at scale  
+- Generic always-on desktop “screen AI” (companion capture is explicit / user-initiated only)  
+- Notarized Mac Gatekeeper-clean distribution (ad-hoc DMG ships first)  
 
 ---
 
@@ -244,6 +250,15 @@ Dogfood: use Engram while building other products—Engram stays general infrast
 
 ## Running locally (V1–V3 alpha)
 
+```bash
+source .venv/bin/activate
+# Dual model: omit OPENAI_API_KEY for local-hash embeddings; set it for stronger LLM synthesis
+ENGRAM_STORE=local python main.py seed
+ENGRAM_STORE=local python main.py serve
+```
+
+Eval (local only): `make eval` — compares adaptive vs vector/graph/hybrid/huge on `data/evals/v1.5_cases.json`.
+
 Versioned guides: [`docs/V1.md`](./docs/V1.md) · [`docs/V1.5.md`](./docs/V1.5.md) · [`docs/V2.md`](./docs/V2.md) · [`docs/V2.5.md`](./docs/V2.5.md) · [`docs/V3.md`](./docs/V3.md) · [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md)
 
 ```bash
@@ -279,9 +294,11 @@ python main.py preflight \
 python main.py run \
   --service "Auth Service" \
   --task "Increase auth session TTL from 24 hours to 7 days"
+
+python main.py situation --fixture payment-worker
 ```
 
-API docs: `http://127.0.0.1:8000/docs` · Try UI: `http://127.0.0.1:8000/try` · Meta: `GET /meta`
+API docs: `http://127.0.0.1:8000/docs` · Try UI: `http://127.0.0.1:8000/try` · Meta: `GET /meta` · Situation: `POST /situation`
 
 ---
 
@@ -297,14 +314,16 @@ engram/
 ├── retrieval/     Hybrid graph + vector retrieval
 ├── routing/       V1.5 context router + V2.5 risk router
 ├── learning/      V3 outcome log + similar-task lookup
+├── situation/     Ephemeral on-call screen → context resolve
 ├── preflight/     Risk rules + packet assembly
 ├── provenance/    Evidence helpers
 ├── eval/          Retrieval eval harness
 ├── engine.py      LangGraph preflight + agent run
 ├── config.py
 └── models/
-data/sample/       Demo org + sandbox fixtures
+data/sample/       Demo org + sandbox fixtures + situation fixtures
 data/evals/        V1.5 eval cases
+companion/macos/   macOS on-call companion (capture + DMG scripts)
 website/           Marketing (Vercel) + Try UI (served by API)
 docs/              V1–V3 + HOSTED_TRY
 Dockerfile         Render / container deploy
@@ -334,9 +353,12 @@ Engram determines:
 
 | Doc | Role |
 |---|---|
-| [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Hosted Try deploy, public scope, demo script |
+| [`docs/DEMO.md`](./docs/DEMO.md) | Locked interview / Try demo script |
+| [`docs/HOSTED_TRY.md`](./docs/HOSTED_TRY.md) | Hosted Try deploy, public scope |
+| [`docs/ONCALL_COMPANION.md`](./docs/ONCALL_COMPANION.md) | On-call screen → context engine (ephemeral) |
 | [`docs/V1.md`](./docs/V1.md) … [`docs/V3.md`](./docs/V3.md) | Versioned build notes |
-| [`website/product-direction.md`](./website/product-direction.md) | Canonical product strategy (2026) |
+| [`website/product-direction.md`](./website/product-direction.md) | Canonical Engram product strategy (2026) |
 | [`product-vision.md`](./product-vision.md) | Product vision (aligned; see update banner) |
 | [`AGENTS.md`](./AGENTS.md) | Non-negotiables for contributors / coding agents |
 | [`website/`](./website/) | Marketing site + Try UI |
+| [`companion/macos/`](./companion/macos/) | macOS companion (ScreenCaptureKit + DMG) |

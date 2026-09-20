@@ -6,7 +6,7 @@
     <title>Engram — Try</title>
     <meta
       name="description"
-      content="Try Engram: public GitHub ingest, grounded query/preflight, sample Auth risk loop. Tight demo scope—not multi-tenant SaaS."
+      content="Try Engram: public GitHub ingest, on-call situation, sample Auth risk loop. Tight demo scope—not multi-tenant SaaS."
     />
     <link rel="icon" type="image/png" href="./assets/logo-dark.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,7 +16,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css?v=20260903-try1" />
-    <link rel="stylesheet" href="./try.css?v=20260903-2" />
+    <link rel="stylesheet" href="./try.css?v=20260912-oncall" />
   </head>
   <body data-theme="dark">
     <div class="bg-grid"></div>
@@ -43,9 +43,9 @@
         <div class="try-flow">
           <h1>Try Engram</h1>
           <p class="try-lead">
-            Ingest a <strong>public GitHub</strong> repo → query / preflight, plus the
-            <strong>sample Auth</strong> risk loop (ADR gate, worktree, human resolve). Not multi-tenant SaaS;
-            nothing is merged.
+            Ingest a <strong>public GitHub</strong> repo → query / preflight, an
+            <strong>on-call situation</strong> path, plus the <strong>sample Auth</strong> risk loop.
+            Not multi-tenant SaaS; nothing is merged.
           </p>
           <p id="scopeNote" class="try-note" hidden></p>
           <div id="hostedBanner" class="try-banner" hidden>
@@ -120,7 +120,7 @@
             <h2 id="clone-title">2b. Your GitHub — run on clone</h2>
             <p class="try-note">
               Clones the ingested repo into <code>.engram/clones/</code>, opens a worktree, and lets the backend
-              propose a candidate. No merge/push. Risk gates are thin without ADRs/incidents—sample Auth (section 3)
+              propose a candidate. No merge/push. Risk gates are thin without ADRs/incidents—sample Auth (section 4)
               is still the full risk demo.
             </p>
             <label>
@@ -137,8 +137,32 @@
             <div id="cloneOut" class="try-out" hidden></div>
           </section>
 
+          <section class="try-panel" id="oncall" aria-labelledby="oncall-title">
+            <h2 id="oncall-title">3. On-call situation</h2>
+            <p class="try-note">
+              Same path as the Mac companion: ephemeral screen text → <code>POST /situation</code> → grounded
+              answer. Screen text is not stored. Mac users can also
+              <a href="https://github.com/Surya7612/Engram/releases">download the companion DMG</a>
+              or open the
+              <a href="./fake-datadog.html" target="_blank" rel="noreferrer">fake Datadog</a> page for live capture demos.
+            </p>
+            <label>
+              Screen text
+              <textarea id="situationText" rows="8" autocomplete="off"></textarea>
+            </label>
+            <label>
+              Question
+              <textarea id="situationQuestion" rows="2">What's happening here? What should I check first?</textarea>
+            </label>
+            <div class="try-actions">
+              <button type="button" class="btn btn-ghost" id="situationFixtureBtn">Load payment-worker fixture</button>
+              <button type="button" class="btn btn-primary" id="situationAskBtn">Ask situation</button>
+            </div>
+            <div id="situationOut" class="try-out" hidden></div>
+          </section>
+
           <section class="try-panel" id="risk" aria-labelledby="risk-title">
-            <h2 id="risk-title">3. Sample Auth — risk loop</h2>
+            <h2 id="risk-title">4. Sample Auth — risk loop</h2>
             <p class="try-note">
               Uses the demo org (ADR-12 TTL cap, incidents, git worktree). Not your GitHub repo. Nothing is merged.
             </p>
@@ -196,13 +220,22 @@
             <strong>2b · Run on clone</strong>
             <span class="aim">Aim: candidate change in a disposable worktree.</span>
             <span
-              >Local/dev only on the public demo. Thin without ADRs—use section 3 for the full gate
+              >Local/dev only on the public demo. Thin without ADRs—use section 4 for the full gate
               story.</span
             >
           </a>
 
+          <a class="try-guide-card" href="#oncall" data-guide-for="oncall">
+            <strong>3 · On-call</strong>
+            <span class="aim">Aim: ops screen text → grounded history.</span>
+            <span
+              ><em>Ask situation</em> resolves the service from OCR/fixture text and returns evidence
+              (incidents, PRs, ADRs). Ephemeral—not stored. Optional Mac DMG for live capture.</span
+            >
+          </a>
+
           <a class="try-guide-card" href="#risk" data-guide-for="risk">
-            <strong>3 · Sample Auth</strong>
+            <strong>4 · Sample Auth</strong>
             <span class="aim">Aim: risk routing + human governance.</span>
             <span
               ><em>Run agents</em> hits ADR-12 (TTL cap) → usually <em>block</em>. <em>Reject</em>
@@ -213,6 +246,6 @@
       </div>
     </main>
     <script src="./config.js?v=20260903-2"></script>
-    <script src="./try.js?v=20260903-2"></script>
+    <script src="./try.js?v=20260912-oncall"></script>
   </body>
 </html>

@@ -1,0 +1,9 @@
+Datadog APM · Production · payment-worker
+Service: payment-worker
+Endpoint: POST /settlements
+Error: TimeoutException
+P95 latency ↑ 2.4s (baseline 180ms)
+Related: settlement-api degraded dependency signal
+Last deploy correlated with retry policy change
+Alert: settlements timeout storm
+On-call: Fintech Team

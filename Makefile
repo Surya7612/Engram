@@ -1,4 +1,4 @@
-.PHONY: up down seed health serve preflight eval run outcomes install test
+.PHONY: up down seed health serve preflight eval run outcomes situation install test demo-auth
 
 up:
 	docker compose up -d
@@ -26,6 +26,16 @@ eval:
 
 run:
 	python main.py run --service "Auth Service" --task "Increase auth session TTL from 24 hours to 7 days"
+
+# Thin V2 learning loop: run → reject → run again (priors). Requires seeded local store.
+demo-auth:
+	python main.py seed
+	python main.py run --service "Auth Service" --task "Increase auth session TTL from 24 hours to 7 days"
+	@echo "Resolve with: python main.py resolve --last --decision rejected --note 'ADR-12 stands'"
+	@echo "Then: make run   # expect prior in constraints"
+
+situation:
+	python main.py situation --fixture payment-worker
 
 outcomes:
 	python main.py outcomes --stats

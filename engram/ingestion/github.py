@@ -87,6 +87,7 @@ def pulls_to_artifacts(owner: str, name: str, service_id: str, raw: list[dict]) 
                 "summary": (item.get("body") or item.get("title") or "")[:400],
                 "service_ids": [service_id],
                 "kind": "pull_request",
+                "url": item.get("html_url") or f"https://github.com/{owner}/{name}/pull/{number}",
             }
         )
     return artifacts
@@ -112,6 +113,7 @@ def commits_to_artifacts(owner: str, name: str, service_id: str, raw: list[dict]
                 "service_ids": [service_id],
                 "kind": "commit",
                 "sha": sha[:12],
+                "url": item.get("html_url") or f"https://github.com/{owner}/{name}/commit/{sha}",
             }
         )
     return artifacts
@@ -196,6 +198,7 @@ def ingest_github(
                     "artifact_id": service_id,
                     "label": service_name,
                     "service_ids": [service_id],
+                    "source_uri": f"https://github.com/{github_repo}",
                 },
             )
         for item in artifacts:
@@ -210,6 +213,7 @@ def ingest_github(
                     "artifact_id": item["id"],
                     "label": label,
                     "service_ids": item["service_ids"],
+                    "source_uri": item.get("url"),
                 },
             )
         embedding_backend = "openai" if vectors.uses_openai else "local-hash"

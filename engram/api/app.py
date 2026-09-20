@@ -24,7 +24,10 @@ from engram.models.schemas import (
     QueryRequest,
     QueryResponse,
     ResolveRequest,
+    SituationRequest,
+    SituationResponse,
 )
+from engram.situation.resolve import explain_situation
 
 engine: EngramEngine | None = None
 _WEBSITE = Path(__file__).resolve().parents[2] / "website"
@@ -89,6 +92,7 @@ def _capabilities(settings) -> dict:
         "github_ingest": True,
         "query": True,
         "preflight": True,
+        "situation": True,
         "sample_risk_run": True,
         "clone_run": not settings.public_mode,
         "eval": not settings.public_mode,
@@ -118,10 +122,10 @@ def meta() -> dict:
         "store": settings.store,
         "capabilities": _capabilities(settings),
         "scope": (
-            "Public try: public GitHub ingest (capped), query, preflight, sample Auth risk loop. "
-            "No BYO clone/run, no merge/push, not multi-tenant SaaS."
+            "Public try: public GitHub ingest (capped), query, preflight, situation explain, "
+            "sample Auth risk loop. No BYO clone/run, no merge/push, not multi-tenant SaaS."
             if settings.public_mode
-            else "Local/dev mode: full CLI surfaces including clone worktrees."
+            else "Local/dev mode: full CLI surfaces including clone worktrees and on-call companion."
         ),
     }
 
@@ -174,6 +178,16 @@ def query(request: QueryRequest) -> QueryResponse:
     eng = _get_engine()
     try:
         return eng.query(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/situation", response_model=SituationResponse)
+def situation(request: SituationRequest) -> SituationResponse:
+    """Ephemeral on-call screen context → grounded Engram answer. Screen text is not stored."""
+    eng = _get_engine()
+    try:
+        return explain_situation(eng, request)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

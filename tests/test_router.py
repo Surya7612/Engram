@@ -1,11 +1,24 @@
 from engram.routing.context import ContextRouter
 
 
+def test_payments_task_is_risk_shaped():
+    policy = ContextRouter().route(
+        "payment-worker TimeoutException on POST /settlements — what should on-call check?"
+    )
+    assert policy.task_class == "payments"
+    assert policy.include_incidents is True
+    assert policy.include_adrs is True
+    assert policy.token_budget is not None
+    assert policy.token_budget <= 2400
+
+
 def test_docs_task_stays_narrow():
     policy = ContextRouter().route("Fix a typo in the password-reset email copy")
     assert policy.task_class == "docs"
     assert policy.include_incidents is False
     assert policy.top_k <= 3
+    assert policy.token_budget is not None
+    assert policy.token_budget <= 600
 
 
 def test_ttl_task_pulls_incidents_and_adrs():

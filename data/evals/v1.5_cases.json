@@ -26,5 +26,19 @@
     "task": "Who owns Auth Service and what review is required for auth changes?",
     "required_ids": ["adr-09", "svc-auth"],
     "waste_ids": ["inc-901", "adr-50"]
+  },
+  {
+    "id": "payments-settlements",
+    "service": "Payments Service",
+    "task": "payment-worker TimeoutException on POST /settlements — what should on-call check first?",
+    "required_ids": ["inc-1842", "pr-8831", "adr-62"],
+    "waste_ids": ["inc-901", "adr-12", "inc-77"]
+  },
+  {
+    "id": "payments-retry-policy",
+    "service": "Payments Service",
+    "task": "Should we restore settlement retries on payment-worker after the timeout storm?",
+    "required_ids": ["adr-62", "inc-1842", "pr-8831"],
+    "waste_ids": ["adr-12", "inc-480"]
   }
 ]

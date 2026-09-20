@@ -183,6 +183,20 @@ Docs and marketing must distinguish **implemented (alpha)** vs **vision**. Do no
 
 ---
 
+## 7b. Clients on the same engine
+
+The context engine is interface-agnostic. Clients ask what context a situation requires:
+
+| Client | Situation |
+|---|---|
+| Try / API / IDE agents | Proposed code change → preflight, worktree, risk gate |
+| On-call companion (macOS DMG) | Explicit window/region capture → Vision OCR → ephemeral `POST /situation` |
+| Hosted `/try` on-call | Fixture/paste screen text → same `POST /situation` (any browser) |
+
+Screen text is query context only—not permanent enterprise memory. Capture is user-initiated; Engram is not repositioned as generic desktop screen AI.
+
+---
+
 ## 8. Build sequence
 
 Do not start with a full multi-agent “AI company.” Sequence:

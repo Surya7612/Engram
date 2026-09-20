@@ -58,6 +58,9 @@ def organization_roles(
     """Minimum agent org from blast radius + policy. Rules, not a learned router."""
     if task_class == "docs" or policy == PolicyOutcome.ALLOW:
         return ["backend"]
+    if task_class in {"risk_sensitive", "payments", "incident"}:
+        if policy != PolicyOutcome.ALLOW:
+            return ["manager", "backend", "reviewer"]
     if blast and blast.high_path:
         return ["manager", "backend", "reviewer"]
     if policy in {PolicyOutcome.REVIEW, PolicyOutcome.BLOCK}:
