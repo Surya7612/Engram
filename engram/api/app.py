@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+import threading
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -32,15 +33,36 @@ from engram.situation.resolve import explain_situation
 engine: EngramEngine | None = None
 _WEBSITE = Path(__file__).resolve().parents[2] / "website"
 _SAMPLE_RUN_SERVICES = {"auth service", "email service", "svc-auth", "svc-email"}
+_boot: dict = {"seeded": False, "seed_error": None, "seeding": False}
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Bind quickly on cold start; seed demo org without blocking health/meta."""
     global engine
     settings = get_settings()
-    if settings.seed_on_boot or settings.public_mode:
-        seed_from_sample(settings)
     engine = EngramEngine(settings)
+
+    def _seed() -> None:
+        _boot["seeding"] = True
+        try:
+            seed_from_sample(settings, graph=engine.graph, vectors=engine.vectors)
+            _boot["seeded"] = True
+            _boot["seed_error"] = None
+        except Exception as exc:  # noqa: BLE001 — surface on /meta for operators
+            _boot["seed_error"] = str(exc)
+            _boot["seeded"] = False
+        finally:
+            _boot["seeding"] = False
+
+    if settings.seed_on_boot or settings.public_mode:
+        thread = threading.Thread(target=_seed, name="engram-boot-seed", daemon=True)
+        thread.start()
+        # Hash seed is typically <2s; don't hold Render's gate open longer than this.
+        thread.join(timeout=12.0)
+    else:
+        _boot["seeded"] = True
+
     yield
     if engine:
         engine.close()
@@ -100,6 +122,12 @@ def _capabilities(settings) -> dict:
     }
 
 
+@app.get("/live")
+def live() -> dict:
+    """Liveness for keep-alive pings — available as soon as the process accepts traffic."""
+    return {"status": "live", "version": __version__}
+
+
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     eng = _get_engine()
@@ -120,6 +148,9 @@ def meta() -> dict:
         "version": __version__,
         "public_mode": settings.public_mode,
         "store": settings.store,
+        "seeded": _boot["seeded"],
+        "seeding": _boot["seeding"],
+        "seed_error": _boot["seed_error"],
         "capabilities": _capabilities(settings),
         "scope": (
             "Public try: public GitHub ingest (capped), query, preflight, situation explain, "

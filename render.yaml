@@ -3,7 +3,8 @@ services:
     name: engram-api
     runtime: docker
     plan: free
-    healthCheckPath: /health
+    # /live answers before demo seed finishes; /health still checks graph+vectors.
+    healthCheckPath: /live
     envVars:
       - key: ENGRAM_STORE
         value: local

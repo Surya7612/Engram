@@ -1,0 +1,30 @@
+# Ping the public Try host so Render free-tier does not spin down after 15m idle.
+# Uses /live (answers as soon as the process accepts traffic).
+name: Keep hosted Try warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake /live then /health
+        run: |
+          set -e
+          URL="${HOSTED_URL:-https://engram-cjph.onrender.com}"
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /tmp/engram-live.json -w "%{http_code}" -m 90 "$URL/live" || echo 000)
+            echo "attempt=$i live_http=$code"
+            if [ "$code" = "200" ]; then
+              curl -sS -m 60 "$URL/health" | head -c 400 || true
+              echo
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Hosted Try did not become live in time" >&2
+          exit 1

@@ -26,7 +26,11 @@ def _hash_embed(text: str, dim: int = EMBED_DIM) -> list[float]:
 class EmbeddingClient:
     def __init__(self, settings: Settings):
         self._settings = settings
+        # Public Try cold-starts must not block on OpenAI embedding calls during seed.
+        # Chat completions can still use OPENAI_API_KEY via engram.agents.llm.
         key = (settings.openai_api_key or "").strip() or None
+        if settings.public_mode:
+            key = None
         self._openai = OpenAI(api_key=key) if key else None
 
     @property

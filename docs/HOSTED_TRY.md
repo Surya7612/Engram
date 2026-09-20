@@ -43,7 +43,13 @@ Env:
 3. Set the env vars above.  
 4. Open `https://<service>.onrender.com/try`.
 
-Free-tier cold starts can take a minute—use **Check API** if the first request fails.
+Free-tier cold starts can take ~1 minute while Render allocates a machine. The API
+binds before demo seeding finishes (`GET /live`, `GET /meta` include `seeded`).
+A GitHub Action pings `/live` every 10 minutes to reduce spin-downs. Use **Check API**
+if the first browser request still lands on Render’s wake page.
+
+Public mode uses local-hash embeddings so boot never waits on OpenAI; chat can still
+use `OPENAI_API_KEY` when set.
 
 ## Vercel marketing
 

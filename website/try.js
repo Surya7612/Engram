@@ -162,27 +162,54 @@ function explainFetchError(err, base) {
 
 async function api(path, options = {}) {
   const base = apiBase();
-  let response;
-  try {
-    response = await fetch(`${base}${path}`, {
-      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-      ...options,
-    });
-  } catch (err) {
-    throw new Error(explainFetchError(err, base));
+  const { retries = 0, retryDelayMs = 2500, headers, ...fetchOpts } = options;
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let response;
+    try {
+      response = await fetch(`${base}${path}`, {
+        ...fetchOpts,
+        headers: { "Content-Type": "application/json", ...(headers || {}) },
+      });
+    } catch (err) {
+      lastError = new Error(explainFetchError(err, base));
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, retryDelayMs));
+        continue;
+      }
+      throw lastError;
+    }
+    const text = await response.text();
+    let body;
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
+    // Render free-tier wake page is HTML; treat as retryable.
+    const looksLikeWakePage =
+      typeof body === "string" && /application loading|waking up/i.test(body);
+    if (looksLikeWakePage || response.status === 502 || response.status === 503) {
+      lastError = new Error(
+        looksLikeWakePage
+          ? "Hosted API is waking up — retrying…"
+          : typeof body?.detail === "string"
+            ? body.detail
+            : `API ${response.status}`,
+      );
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, retryDelayMs));
+        continue;
+      }
+      throw lastError;
+    }
+    if (!response.ok) {
+      const detail = body && body.detail ? body.detail : body;
+      throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    }
+    return body;
   }
-  const text = await response.text();
-  let body;
-  try {
-    body = text ? JSON.parse(text) : null;
-  } catch {
-    body = text;
-  }
-  if (!response.ok) {
-    const detail = body && body.detail ? body.detail : body;
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
-  }
-  return body;
+  throw lastError || new Error("Request failed");
 }
 
 function applyCapabilities(caps) {
@@ -259,13 +286,16 @@ async function boot() {
   $("apiBase").value = defaultApiBase();
   loadSituationFixture();
   try {
-    const meta = await api("/meta");
+    const meta = await api("/meta", { retries: 8, retryDelayMs: 3000 });
     applyCapabilities(meta.capabilities || {});
     const banner = $("hostedBanner");
     if (banner) banner.hidden = true;
     if (meta.scope && $("scopeNote")) {
       $("scopeNote").textContent = meta.scope;
       $("scopeNote").hidden = false;
+    }
+    if (meta.seeded === false && $("ingestOut")) {
+      showText($("ingestOut"), "API up — demo org still seeding; Check API again in a moment.");
     }
   } catch (err) {
     const banner = $("hostedBanner");
@@ -278,7 +308,18 @@ async function boot() {
 
 $("healthBtn").addEventListener("click", async () => {
   try {
-    showText($("ingestOut"), formatHealth(await api("/health")));
+    showText($("ingestOut"), "Checking API…");
+    const health = await api("/health", { retries: 8, retryDelayMs: 3000 });
+    let extra = "";
+    try {
+      const meta = await api("/meta");
+      if (meta.seeded === false) extra = "\nDemo seed: still loading";
+      else if (meta.seed_error) extra = `\nDemo seed error: ${meta.seed_error}`;
+      else if (meta.seeded) extra = "\nDemo seed: ready";
+    } catch {
+      /* meta optional */
+    }
+    showText($("ingestOut"), formatHealth(health) + extra);
   } catch (err) {
     showText($("ingestOut"), String(err.message || err));
   }
