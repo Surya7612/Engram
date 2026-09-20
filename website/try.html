@@ -6,7 +6,7 @@
     <title>Engram — Try</title>
     <meta
       name="description"
-      content="Try Engram: public GitHub ingest, on-call situation, sample Auth risk loop. Tight demo scope—not multi-tenant SaaS."
+      content="Try Engram: your public GitHub ingest, then a separate sample-org on-call + Auth risk demo. Not multi-tenant SaaS."
     />
     <link rel="icon" type="image/png" href="./assets/logo-dark.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,7 +16,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css?v=20260903-try1" />
-    <link rel="stylesheet" href="./try.css?v=20260912-oncall" />
+    <link rel="stylesheet" href="./try.css?v=20260920-clarify" />
   </head>
   <body data-theme="dark">
     <div class="bg-grid"></div>
@@ -43,8 +43,9 @@
         <div class="try-flow">
           <h1>Try Engram</h1>
           <p class="try-lead">
-            Ingest a <strong>public GitHub</strong> repo → query / preflight, an
-            <strong>on-call situation</strong> path, plus the <strong>sample Auth</strong> risk loop.
+            Two short demos on one page:
+            <strong>your public GitHub</strong> (sections 1–2), then a
+            <strong>seeded sample org</strong> for on-call + Auth risk (sections 3–4)—not the repo you connected.
             Not multi-tenant SaaS; nothing is merged.
           </p>
           <p id="scopeNote" class="try-note" hidden></p>
@@ -138,13 +139,11 @@
           </section>
 
           <section class="try-panel" id="oncall" aria-labelledby="oncall-title">
-            <h2 id="oncall-title">3. On-call situation</h2>
+            <h2 id="oncall-title">3. Sample org — on-call situation</h2>
             <p class="try-note">
-              Same path as the Mac companion: ephemeral screen text → <code>POST /situation</code> → grounded
-              answer. Screen text is not stored. Mac users can also
-              <a href="https://github.com/Surya7612/Engram/releases">download the companion DMG</a>
-              or open the
-              <a href="./fake-datadog.html" target="_blank" rel="noreferrer">fake Datadog</a> page for live capture demos.
+              <strong>Not your GitHub repo.</strong> Uses the seeded Payments / payment-worker demo:
+              paste or load fixture screen text → grounded incidents, PRs, and ADRs. Screen text is
+              ephemeral (not stored).
             </p>
             <label>
               Screen text
@@ -159,12 +158,20 @@
               <button type="button" class="btn btn-primary" id="situationAskBtn">Ask situation</button>
             </div>
             <div id="situationOut" class="try-out" hidden></div>
+            <p class="try-note try-note-quiet">
+              Optional:
+              <a href="./fake-datadog.html" target="_blank" rel="noreferrer">fake Datadog page</a>
+              ·
+              <a href="https://github.com/Surya7612/Engram/releases">Mac companion DMG</a>
+              (same API; live capture).
+            </p>
           </section>
 
           <section class="try-panel" id="risk" aria-labelledby="risk-title">
-            <h2 id="risk-title">4. Sample Auth — risk loop</h2>
+            <h2 id="risk-title">4. Sample org — Auth risk loop</h2>
             <p class="try-note">
-              Uses the demo org (ADR-12 TTL cap, incidents, git worktree). Not your GitHub repo. Nothing is merged.
+              <strong>Not your GitHub repo.</strong> Seeded Auth Service demo (ADR-12 TTL cap, incidents,
+              disposable worktree). Nothing is merged.
             </p>
             <label>
               Task
@@ -194,25 +201,26 @@
           <p class="try-guide-kicker">Guide</p>
           <h2>What each step is for</h2>
           <p class="try-guide-intro">
-            Engram is a control plane around coding agents—not a chatbot over your repo. Prefer
+            Engram is a control plane around coding agents—not a chatbot over your repo. Sections 1–2
+            use <em>your</em> ingest; 3–4 switch to the <em>sample org</em>. Prefer
             <a href="https://engram-cjph.onrender.com/try">/try</a> on this host.
           </p>
 
           <a class="try-guide-card" href="#connect" data-guide-for="connect">
-            <strong>1 · Connect</strong>
-            <span class="aim">Aim: load public GitHub into the context substrate.</span>
+            <strong>1 · Your GitHub</strong>
+            <span class="aim">Aim: load a public repo into the context substrate.</span>
             <span
-              ><em>Ingest</em> fetches PRs (or commits) and writes them into the graph + vectors as a
-              named service. No clone, no merge.</span
+              ><em>Ingest</em> fetches PRs (or commits) into graph + vectors as a named service. No
+              clone, no merge.</span
             >
           </a>
 
           <a class="try-guide-card" href="#ask" data-guide-for="ask">
-            <strong>2 · Ask</strong>
-            <span class="aim">Aim: see task-specific context with provenance.</span>
+            <strong>2 · Ask that repo</strong>
+            <span class="aim">Aim: task-specific context with provenance.</span>
             <span
-              ><em>Query</em> answers from retrieved evidence. <em>Preflight</em> builds a risk/policy
-              packet (what matters before anyone edits code).</span
+              ><em>Query</em> / <em>Preflight</em> against the service you just ingested—not the sample
+              org below.</span
             >
           </a>
 
@@ -220,17 +228,17 @@
             <strong>2b · Run on clone</strong>
             <span class="aim">Aim: candidate change in a disposable worktree.</span>
             <span
-              >Local/dev only on the public demo. Thin without ADRs—use section 4 for the full gate
-              story.</span
+              >Still your ingested repo (local/dev only on the public demo). Thin without ADRs—section 4
+              is the full gate story.</span
             >
           </a>
 
           <a class="try-guide-card" href="#oncall" data-guide-for="oncall">
-            <strong>3 · On-call</strong>
+            <strong>3 · Sample on-call</strong>
             <span class="aim">Aim: ops screen text → grounded history.</span>
             <span
-              ><em>Ask situation</em> resolves the service from OCR/fixture text and returns evidence
-              (incidents, PRs, ADRs). Ephemeral—not stored. Optional Mac DMG for live capture.</span
+              ><strong>Sample org</strong> (Payments), not your GitHub.
+              <em>Ask situation</em> returns incidents/PRs/ADRs. Ephemeral—not stored.</span
             >
           </a>
 
@@ -238,8 +246,8 @@
             <strong>4 · Sample Auth</strong>
             <span class="aim">Aim: risk routing + human governance.</span>
             <span
-              ><em>Run agents</em> hits ADR-12 (TTL cap) → usually <em>block</em>. <em>Reject</em>
-              records a prior; run again to see learning-layer lookup (not a trained policy).</span
+              ><strong>Sample org</strong> (Auth Service), not your GitHub.
+              <em>Run agents</em> → ADR-12 <em>block</em>; <em>Reject</em> then rerun to see a prior.</span
             >
           </a>
         </aside>

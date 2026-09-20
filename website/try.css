@@ -49,6 +49,13 @@
   color: var(--muted);
 }
 
+.try-note-quiet {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
 .try-lead {
   margin: 0 0 2rem;
   line-height: 1.55;

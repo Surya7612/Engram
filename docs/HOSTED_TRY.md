@@ -11,15 +11,20 @@ Public demo of Engram’s context → risk → governance loop. **Not** multi-te
 
 Full locked script: [`DEMO.md`](./DEMO.md).
 
-1. **Ingest** a public repo (default example works) → graph + vectors for that service  
-2. **Query** / **Preflight** → evidence-backed answer and risk packet  
-3. **On-call situation** → load payment-worker fixture → Ask situation (same `POST /situation` as the Mac companion)  
-4. **Sample Auth — Run agents** on the TTL task → expect `block` (ADR-12)  
-5. **Reject** with a note → **Run agents** again → prior surfaces as a constraint  
+**Demo A — your GitHub**
 
-Side guide on the Try page explains each section. Nothing is merged or pushed.
+1. **Ingest** a public repo → graph + vectors for that service  
+2. **Query** / **Preflight** → evidence for *that* service  
 
-Optional Mac path: download the [companion DMG](https://github.com/Surya7612/Engram/releases), grant Screen Recording, open `/site/fake-datadog.html`, **Capture window & ask**. Details: [`ONCALL_COMPANION.md`](./ONCALL_COMPANION.md).
+**Demo B — seeded sample org** (not the repo you connected)
+
+3. **On-call** → load payment-worker fixture → Ask situation (Payments demo)  
+4. **Auth risk** → Run agents on the TTL task → expect `block` (ADR-12)  
+5. **Reject** → Run agents again → prior surfaces  
+
+Side guide on Try labels the switch. Nothing is merged or pushed.
+
+Optional Mac companion (same `/situation` API): [DMG](https://github.com/Surya7612/Engram/releases) + [`ONCALL_COMPANION.md`](./ONCALL_COMPANION.md).
 
 ## Public scope
 

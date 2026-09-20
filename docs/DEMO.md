@@ -7,16 +7,22 @@ One reproducible path for interviews and self-serve Try. Nothing merges.
 URL: [https://engram-cjph.onrender.com/try](https://engram-cjph.onrender.com/try)
 
 1. **Check API** if the free tier is waking up.
+
+**Demo A — your GitHub**
+
 2. **Ingest** the default public repo → named service in graph + vectors.
-3. **Query** / **Preflight** → evidence-backed answer and risk packet.
-4. **On-call situation** → Load payment-worker fixture → **Ask situation**  
-   Expect Payments Service + INC-1842 / PR-8831 / ADR-62 style evidence.
-5. **Sample Auth — Run agents** on TTL task → expect `block` (ADR-12).
-6. **Reject** with a note → **Run agents** again → prior surfaces as a constraint.
+3. **Query** / **Preflight** → evidence about *that* repo.
 
-Side guide cards on `/try` explain each step. Public Try: no BYO clone/run, no browser PATs, no `/eval`.
+**Demo B — seeded sample org** (not the repo you connected)
 
-## Mac companion (optional)
+4. **On-call** → Load payment-worker fixture → **Ask situation**  
+   Expect Payments Service + INC-1842 / PR-8831 / ADR-62.
+5. **Auth — Run agents** on TTL task → expect `block` (ADR-12).
+6. **Reject** → **Run agents** again → prior surfaces.
+
+Public Try: no BYO clone/run, no browser PATs, no `/eval`.
+
+## Mac companion (optional; not required for Try)
 
 1. Build DMG: `cd companion/macos && ./scripts/build-app.sh && ./scripts/make-dmg.sh`  
    Or download from [Releases](https://github.com/Surya7612/Engram/releases) when uploaded.
