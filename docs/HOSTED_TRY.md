@@ -56,8 +56,12 @@ Render dashboard → **Manual Deploy** → **Deploy latest commit**. Auto-deploy
 is not enough when a prior boot hung on seed/embeddings (free tier will keep the
 old unhealthy instance until a new deploy lands).
 
-Optional: add a Render **Deploy Hook** URL as GitHub secret `RENDER_DEPLOY_HOOK`
-so `.github/workflows/deploy-hosted.yml` can trigger rebuilds on API changes.
+For workflow-triggered deployment, add a Render **Deploy Hook** URL as GitHub
+secret `RENDER_DEPLOY_HOOK` and enable **Deploy hosted Try** in GitHub Actions.
+The workflow fails when the hook is missing; a successful push is not a successful
+deployment. Removing `GITHUB_TOKEN` from the blueprint does not remove a token
+already configured in Render: delete that environment variable on the service,
+rotate/revoke the old token at GitHub, then redeploy.
 
 Free-tier cold starts can take ~1 minute while Render allocates a machine. The API
 binds before demo seeding finishes (`GET /live`, `GET /meta` include `seeded`).

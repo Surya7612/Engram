@@ -24,9 +24,9 @@ jobs:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
           if [ -z "$HOOK" ]; then
-            echo "RENDER_DEPLOY_HOOK secret not set — skip."
-            echo "Dashboard → engram-api → Manual Deploy to pick up cold-start fixes."
-            exit 0
+            echo "::error::RENDER_DEPLOY_HOOK is missing. No deployment was triggered."
+            echo "Dashboard → engram-api → Manual Deploy → Deploy latest commit."
+            exit 1
           fi
           code=$(curl -sS -o /tmp/deploy-hook.out -w "%{http_code}" -X POST "$HOOK")
           echo "hook_http=$code"
