@@ -11,18 +11,15 @@ Public demo of Engram’s context → risk → governance loop. **Not** multi-te
 
 Full locked script: [`DEMO.md`](./DEMO.md).
 
-**Demo A — your GitHub**
+The hosted demo uses only the seeded sample organization:
 
-1. **Ingest** a public repo → graph + vectors for that service  
-2. **Query** / **Preflight** → evidence for *that* service  
+1. Query / preflight Auth Service with source evidence.
+2. On-call: load the payment-worker fixture and ask about the situation.
+3. Run the sample Auth TTL risk loop; expect a block grounded in ADR-12.
 
-**Demo B — seeded sample org** (not the repo you connected)
-
-3. **On-call** → load payment-worker fixture → Ask situation (Payments demo)  
-4. **Auth risk** → Run agents on the TTL task → expect `block` (ADR-12)  
-5. **Reject** → Run agents again → prior surfaces  
-
-Side guide on Try labels the switch. Nothing is merged or pushed.
+Runs are ephemeral. Shared GitHub ingestion, sample reset, outcome listing and
+approve/reject writes return 403. Ingest and the persistent learning loop remain
+available on your own local/dev API. No anonymous text becomes a later visitor's prior.
 
 Optional Mac companion (same `/situation` API): [DMG](https://github.com/Surya7612/Engram/releases) + [`ONCALL_COMPANION.md`](./ONCALL_COMPANION.md).
 
@@ -30,16 +27,22 @@ Optional Mac companion (same `/situation` API): [DMG](https://github.com/Surya76
 
 | Enabled | Disabled |
 |---|---|
-| Public GitHub ingest (capped) | BYO clone / worktree run |
-| Query + preflight | Eval harness (`POST /eval`) |
-| On-call situation (`POST /situation`) | Browser-supplied GitHub PATs |
-| Sample Auth / Email risk loop | Multi-tenant isolation |
-| Outcome resolve (approve/reject record) | |
+| Seeded query + preflight | Shared GitHub ingestion and sample reset |
+| Ephemeral on-call situation | BYO clone/run, browser PATs, eval |
+| Fixture-only Auth / Email risk loop | Shared outcome reads, resolution and persistent priors |
 
 Env:
 
-- Required for hosted: `ENGRAM_PUBLIC_MODE=true`, `ENGRAM_SEED_ON_BOOT=true`, `ENGRAM_STORE=local`
-- Optional: `OPENAI_API_KEY` (better answers), server-side `GITHUB_TOKEN` (rate limits), `ENGRAM_CORS_ORIGINS` (Vercel marketing domain)
+- Hosted: `ENGRAM_PUBLIC_MODE=true`, `ENGRAM_SEED_ON_BOOT=true`, `ENGRAM_STORE=local`.
+- Remove `GITHUB_TOKEN` from the public service; it is unnecessary for this demo.
+- Optional: `OPENAI_API_KEY` (answers), `ENGRAM_CORS_ORIGINS` (marketing domain).
+
+On rollout, restart to rebuild graph/vector context from the trusted sample. Public
+requests fail closed until seeding succeeds. Public runs ignore existing outcome
+logs, do not record new outcomes, and never use repository metadata to clone.
+Quarantine or remove old demo outcomes and clones through operator-controlled
+maintenance; inspect GitHub token audit activity and rotate the previously exposed
+service token. A code push alone does not establish that the running host is fixed.
 
 ## Deploy (Render)
 

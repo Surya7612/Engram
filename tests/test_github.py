@@ -27,6 +27,26 @@ def test_paginate_walks_pages_until_limit():
     assert out[-1]["n"] == 119
 
 
+def test_paginate_raises_on_github_rate_limit():
+    from engram.ingestion.github import GitHubRateLimitError
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            403,
+            json={"message": "API rate limit exceeded"},
+            headers={"x-ratelimit-remaining": "0"},
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        try:
+            _paginate(client, "https://api.github.com/repos/acme/demo/pulls", {}, limit=5)
+            raised = False
+        except GitHubRateLimitError as exc:
+            raised = True
+            assert "GITHUB_TOKEN" in str(exc)
+    assert raised
+
+
 def test_ingest_github_pulls_without_network(tmp_path):
     settings = Settings(
         store="local",

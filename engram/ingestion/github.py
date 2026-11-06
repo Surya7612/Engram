@@ -28,6 +28,30 @@ def _headers(token: str | None) -> dict[str, str]:
     return headers
 
 
+class GitHubRateLimitError(RuntimeError):
+    """Raised when GitHub rejects the request for rate limiting (often HTTP 403)."""
+
+
+def _raise_for_github(response: httpx.Response) -> None:
+    if response.is_success:
+        return
+    body = (response.text or "").casefold()
+    remaining = response.headers.get("x-ratelimit-remaining")
+    rate_limited = (
+        response.status_code == 429
+        or remaining == "0"
+        or "rate limit" in body
+        or "api rate limit exceeded" in body
+    )
+    if rate_limited:
+        raise GitHubRateLimitError(
+            "GitHub API rate limit exceeded for this host. "
+            "For local/dev ingestion, configure a server-side GITHUB_TOKEN "
+            "(limit access to required repos). Shared public ingestion is disabled."
+        )
+    response.raise_for_status()
+
+
 def _paginate(
     client: httpx.Client,
     url: str,
@@ -42,7 +66,7 @@ def _paginate(
     while len(out) < limit:
         params = {"per_page": per_page, "page": page, **(extra_params or {})}
         response = client.get(url, headers=headers, params=params)
-        response.raise_for_status()
+        _raise_for_github(response)
         batch = response.json()
         if not isinstance(batch, list) or not batch:
             break

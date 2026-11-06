@@ -138,7 +138,8 @@ function formatRun(data) {
 
 let lastOutcomeId = null;
 let capabilities = {
-  github_ingest: true,
+  github_ingest: false,
+  outcome_resolve: false,
   query: true,
   preflight: true,
   sample_risk_run: true,
@@ -155,6 +156,13 @@ function explainFetchError(err, base) {
       "Open https://engram-cjph.onrender.com/try (same origin), or set website/config.js apiBase.",
       "Local builder: source .venv/bin/activate && python main.py serve → http://127.0.0.1:8000/try",
       "See docs/HOSTED_TRY.md",
+    ].join("\n");
+  }
+  if (/rate limit/i.test(msg)) {
+    return [
+      "GitHub rate-limited ingestion on this API.",
+      "For local/dev ingestion, configure a narrowly scoped GITHUB_TOKEN on your own API. Public ingestion is disabled.",
+      "Sample-org sections (on-call / Auth risk) still work without ingest.",
     ].join("\n");
   }
   return msg;
@@ -214,6 +222,15 @@ async function api(path, options = {}) {
 
 function applyCapabilities(caps) {
   capabilities = { ...capabilities, ...(caps || {}) };
+  $("ingestBtn").disabled = capabilities.github_ingest === false;
+  $("seedBtn").hidden = capabilities.github_ingest === false;
+  if (capabilities.github_ingest === false) {
+    $("connect-title").textContent = "1. Seeded public demo";
+    $("ask-title").textContent = "2. Ask the sample org";
+    $("askService").value = "Auth Service";
+    $("question").value = "Why is the Auth Service session TTL capped?";
+    showText($("ingestOut"), "Shared ingestion is disabled. GitHub ingestion is available on your local/dev API.");
+  }
   const clone = $("clone-run");
   if (clone) clone.hidden = capabilities.clone_run === false;
   const guideClone = $("guideClone");
@@ -346,7 +363,7 @@ $("ingestBtn").addEventListener("click", async () => {
       if ($("cloneService")) $("cloneService").value = result.service;
     }
   } catch (err) {
-    showText($("ingestOut"), String(err.message || err));
+    showText($("ingestOut"), explainFetchError(err, apiBase()));
   }
 });
 
@@ -419,7 +436,7 @@ $("runBtn").addEventListener("click", async () => {
     });
     lastOutcomeId = result.outcome_id || null;
     showHtml($("runOut"), formatRun(result));
-    $("resolveBox").hidden = !(result.human_required && lastOutcomeId);
+    $("resolveBox").hidden = !(capabilities.outcome_resolve && result.human_required && lastOutcomeId);
   } catch (err) {
     showText($("runOut"), String(err.message || err));
   }

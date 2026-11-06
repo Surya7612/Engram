@@ -70,7 +70,7 @@ class AgentRouter:
                 task_class,
                 blast_radius_from_packet(packet),
             )
-            priors = OutcomeStore(self._settings.local_data_dir / "outcomes.jsonl").similar(
+            priors = [] if self._settings.public_mode else OutcomeStore(self._settings.local_data_dir / "outcomes.jsonl").similar(
                 packet.service.name,
                 packet.task,
             )
@@ -99,14 +99,15 @@ class AgentRouter:
                 return {"candidate": None}
             packet = state["packet"]
             req = state["request"]
-            github_repo = req.repo or packet.service.github_repo
+            # Public runs never trust graph-controlled repository metadata.
+            github_repo = None if self._settings.public_mode else (req.repo or packet.service.github_repo)
             try:
                 sandbox = Sandbox.create(
                     self._settings.data_dir,
                     self._settings.local_data_dir,
                     packet.service.id,
                     github_repo=github_repo,
-                    token=req.token or self._settings.github_token,
+                    token=None if self._settings.public_mode else (req.token or self._settings.github_token),
                 )
             except (ValueError, RuntimeError) as exc:
                 return {
@@ -179,6 +180,9 @@ class AgentRouter:
                 risk=decision.as_dict(),
                 priors=priors,
             )
+            if self._settings.public_mode:
+                result.notes.append("Public demo: ephemeral run; outcomes are not stored or reused.")
+                return {"result": result}
             outcome = OutcomeStore(self._settings.local_data_dir / "outcomes.jsonl").record(
                 result,
                 extra={

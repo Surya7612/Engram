@@ -12,7 +12,7 @@ from engram import __version__
 from engram.config import get_settings
 from engram.engine import EngramEngine
 from engram.eval.harness import run_eval
-from engram.ingestion.github import ingest_github
+from engram.ingestion.github import GitHubRateLimitError, ingest_github
 from engram.ingestion.seed import seed_from_sample
 from engram.learning.store import OutcomeStore
 from engram.models.schemas import (
@@ -41,6 +41,7 @@ async def lifespan(app: FastAPI):
     """Bind quickly on cold start; seed demo org without blocking health/meta."""
     global engine
     settings = get_settings()
+    _boot.update(seeded=False, seed_error=None, seeding=False)
     engine = EngramEngine(settings)
 
     def _seed() -> None:
@@ -73,7 +74,7 @@ app = FastAPI(
     title="Engram",
     description=(
         "Context, routing & safety layer around coding agents (V1–V3 alpha). "
-        "Public try: GitHub ingest, query, preflight, sample Auth risk loop. "
+        "Public try: seeded query, preflight, sample Auth risk loop. "
         "Not multi-tenant SaaS; candidates are never merged."
     ),
     version=__version__,
@@ -104,6 +105,8 @@ if _WEBSITE.exists():
 
 
 def _get_engine() -> EngramEngine:
+    if get_settings().public_mode and not _boot["seeded"]:
+        raise HTTPException(status_code=503, detail="Public demo seed is not ready.")
     if engine is None:
         raise HTTPException(status_code=503, detail="Engine not initialized")
     return engine
@@ -111,7 +114,8 @@ def _get_engine() -> EngramEngine:
 
 def _capabilities(settings) -> dict:
     return {
-        "github_ingest": True,
+        "github_ingest": not settings.public_mode,
+        "outcome_resolve": not settings.public_mode,
         "query": True,
         "preflight": True,
         "situation": True,
@@ -151,10 +155,11 @@ def meta() -> dict:
         "seeded": _boot["seeded"],
         "seeding": _boot["seeding"],
         "seed_error": _boot["seed_error"],
+        "github_token_configured": bool((settings.github_token or "").strip()),
         "capabilities": _capabilities(settings),
         "scope": (
-            "Public try: public GitHub ingest (capped), query, preflight, situation explain, "
-            "sample Auth risk loop. No BYO clone/run, no merge/push, not multi-tenant SaaS."
+            "Public try: seeded query, preflight, situation explain, "
+            "sample Auth risk loop. No shared ingestion or outcome writes, no BYO clone/run, no merge/push."
             if settings.public_mode
             else "Local/dev mode: full CLI surfaces including clone worktrees and on-call companion."
         ),
@@ -163,6 +168,8 @@ def meta() -> dict:
 
 @app.post("/ingest/sample")
 def ingest_sample() -> dict:
+    if get_settings().public_mode:
+        raise HTTPException(status_code=403, detail="Sample reset is disabled in public try mode.")
     eng = _get_engine()
     return seed_from_sample(get_settings(), graph=eng.graph, vectors=eng.vectors)
 
@@ -170,13 +177,11 @@ def ingest_sample() -> dict:
 @app.post("/ingest/github")
 def ingest_github_repo(request: GitHubIngestRequest) -> dict:
     settings = get_settings()
+    if settings.public_mode:
+        raise HTTPException(status_code=403, detail="GitHub ingestion is disabled on the shared public demo. Use local/dev mode.")
     eng = _get_engine()
     limit = request.limit
     token = request.token
-    if settings.public_mode:
-        limit = min(limit, settings.public_ingest_limit)
-        # Public try uses public repos; do not accept browser-supplied PATs on the shared demo.
-        token = None
     try:
         return ingest_github(
             settings,
@@ -189,7 +194,20 @@ def ingest_github_repo(request: GitHubIngestRequest) -> dict:
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except GitHubRateLimitError as exc:
+        raise HTTPException(status_code=429, detail=str(exc)) from exc
     except httpx.HTTPError as exc:
+        # Older httpx paths may still surface GitHub's 403 rate-limit text.
+        msg = str(exc)
+        if "rate limit" in msg.casefold():
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    "GitHub API rate limit exceeded for this host. "
+                    "For local/dev ingestion, configure a server-side GITHUB_TOKEN "
+                    "(limit access to required repos). Shared public ingestion is disabled."
+                ),
+            ) from exc
         raise HTTPException(status_code=502, detail=f"GitHub ingest failed: {exc}") from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -258,6 +276,8 @@ def _outcomes() -> OutcomeStore:
 
 @app.get("/outcomes")
 def list_outcomes(limit: int = 20, stats: bool = False) -> dict:
+    if get_settings().public_mode:
+        raise HTTPException(status_code=403, detail="Shared outcomes are disabled in public try mode.")
     store = _outcomes()
     if stats:
         return store.stats()
@@ -266,6 +286,8 @@ def list_outcomes(limit: int = 20, stats: bool = False) -> dict:
 
 @app.post("/outcomes/{outcome_id}/resolve")
 def resolve_outcome(outcome_id: str, request: ResolveRequest) -> dict:
+    if get_settings().public_mode:
+        raise HTTPException(status_code=403, detail="Outcome resolution is disabled in public try mode.")
     try:
         return _outcomes().resolve(outcome_id, request.decision, request.note)
     except ValueError as exc:

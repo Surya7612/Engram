@@ -6,7 +6,7 @@
     <title>Engram — Try</title>
     <meta
       name="description"
-      content="Try Engram: your public GitHub ingest, then a separate sample-org on-call + Auth risk demo. Not multi-tenant SaaS."
+      content="Try Engram: seeded sample-org query, on-call and Auth risk demo. Not multi-tenant SaaS."
     />
     <link rel="icon" type="image/png" href="./assets/logo-dark.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -43,9 +43,8 @@
         <div class="try-flow">
           <h1>Try Engram</h1>
           <p class="try-lead">
-            Two short demos on one page:
-            <strong>your public GitHub</strong> (sections 1–2), then a
-            <strong>seeded sample org</strong> for on-call + Auth risk (sections 3–4)—not the repo you connected.
+            The public demo uses a <strong>seeded sample org</strong> for queries, on-call and Auth risk.
+            GitHub ingestion and outcome resolution require your own local/dev API.
             Not multi-tenant SaaS; nothing is merged.
           </p>
           <p id="scopeNote" class="try-note" hidden></p>
@@ -87,7 +86,7 @@
               <input id="token" type="password" placeholder="ghp_…" autocomplete="off" />
             </label>
             <p class="try-note">
-              Public demo rejects browser PATs. Use public repos. Local/dev can pass a token to your own API.
+              Public demo disables ingestion and browser PATs. Local/dev can ingest into your own API.
             </p>
             <div class="try-actions">
               <button type="button" class="btn btn-primary" id="ingestBtn">Ingest repo</button>
@@ -201,13 +200,13 @@
           <p class="try-guide-kicker">Guide</p>
           <h2>What each step is for</h2>
           <p class="try-guide-intro">
-            Engram is a control plane around coding agents—not a chatbot over your repo. Sections 1–2
-            use <em>your</em> ingest; 3–4 switch to the <em>sample org</em>. Prefer
+            Engram is a control plane around coding agents—not a chatbot over your repo. The hosted demo uses the <em>sample org</em>;
+            repository ingestion is available on your own local/dev API. Prefer
             <a href="https://engram-cjph.onrender.com/try">/try</a> on this host.
           </p>
 
           <a class="try-guide-card" href="#connect" data-guide-for="connect">
-            <strong>1 · Your GitHub</strong>
+            <strong>1 · Connect (local/dev)</strong>
             <span class="aim">Aim: load a public repo into the context substrate.</span>
             <span
               ><em>Ingest</em> fetches PRs (or commits) into graph + vectors as a named service. No
@@ -219,7 +218,7 @@
             <strong>2 · Ask that repo</strong>
             <span class="aim">Aim: task-specific context with provenance.</span>
             <span
-              ><em>Query</em> / <em>Preflight</em> against the service you just ingested—not the sample
+              ><em>Query</em> / <em>Preflight</em> against Auth Service on the public demo, or your locally ingested service
               org below.</span
             >
           </a>
@@ -254,6 +253,6 @@
       </div>
     </main>
     <script src="./config.js?v=20260903-2"></script>
-    <script src="./try.js?v=20260920-coldstart"></script>
+    <script src="./try.js?v=20261105-security"></script>
   </body>
 </html>
